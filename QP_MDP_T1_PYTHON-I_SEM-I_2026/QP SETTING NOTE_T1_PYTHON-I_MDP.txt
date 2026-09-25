@@ -13,21 +13,27 @@ S4  Setting rules     : conceptual/reasoning questions only; no definitions,
     formulae, short notes, True/False, Yes/No or fill in the blanks; Q-1 is
     the compulsory MCQ; 3 main questions in total; 3 sets with identical
     questions and only the MCQ sequence reshuffled; no faculty name used.
-S5  PB split          : offline = 8 MCQ marks + 2 marks of PB Sr. No. 30 = 10
-    from the Practice Book, and 6 marks outside it; online 9 marks entirely
-    outside it. Every PB question keeps its stem unchanged (only the options
-    were rebuilt to six), so each remains a PB question.
+S5  PB split          : offline = 10 x 0.5 + 5 x 1 = 10 MCQ marks, all from
+    the Practice Book, and 6 marks outside it (the whole of Q-2); online 9
+    marks entirely outside it. Every PB question keeps its stem unchanged
+    (only the options were rebuilt to six), so each remains a PB question.
 S6  MCQ rules         : every MCQ is 1 mark with exactly 6 options; every
     output MCQ uses e) Error and f) None of the above; every output MCQ was
     executed (see tools/verify_qp.py) before finalising.
-    OPEN ITEM: the preferred 10 x 0.5 + 5 x 1 pattern was NOT used because it
-    needs written HOD clearance (it clashes with the "at least seven
-    questions in Q-1(A) and Q-1(B)" rule). This paper uses the compliant
-    Case-2 pattern: eight 1-mark MCQs, all compulsory in Q-1.
+    *** CLEARANCE REQUIRED BEFORE SUBMISSION ***
+    This paper uses the 10 x 0.5 + 5 x 1 pattern.  Case 1 of the FY
+    instruction requires at least SEVEN questions in EACH of Q-1(A) and
+    Q-1(B) when 0.5-mark and 1-mark MCQs are mixed; Q-1(A) has 10 but Q-1(B)
+    has only 5.  §6 of the guidelines asks for written clarification from the
+    HOD / FY QP authority before using five 1-mark MCQs - obtain it, or fall
+    back to Case 2 (all MCQs of one mark, all compulsory in Q-1).
     Recall-only PB items (Sr 1-20) and the trivial algorithm trace (Sr 21) are
     deliberately not used, because §4 forbids easy recall questions; PB
     Sr. No. 159 was dropped because its code cannot be re-indented
-    unambiguously and it does not reproduce the printed key.
+    unambiguously and it does not reproduce the printed key.  Unit 1 is an
+    original algorithm-and-flowchart question rather than a PB item, because
+    the only non-recall Unit-1 PB entries (Sr 23-38) are 3-4 mark descriptive
+    questions and the Unit-1 MCQs are the recall questions §4 forbids.
 S7  Workflow          : blueprint frozen first; PB serial numbers recorded in
     the faculty-only audit sheet; outside-PB questions test operator
     precedence, type conversion, logical operators, nested decisions,

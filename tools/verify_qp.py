@@ -37,8 +37,10 @@ TEMPLATE = (Path(__file__).resolve().parents[1] / "QP REQUIRED DOCUMENTS"
 
 # every MCQ answer is re-derived by executing its code; the value below is what
 # the code really prints (trailing separators normalised away)
-RUNTIME = {66: "11.0", 74: "46.0", 71: "False", 114: "5\n11", 150: "3",
-           166: "77", 170: "1 2 4", 177: "11 5"}
+RUNTIME = {66: "11.0", 74: "46.0", 84: "3.0", 68: "27.2", 166: "77",
+           161: "81", 158: "26,27,28,29,", 164: "28", 170: "1 2 4",
+           160: "2 5 7,", 71: "False", 76: "9", 177: "11 5", 114: "5\n11",
+           165: "12"}
 
 
 def check(cond, msg):
@@ -80,7 +82,7 @@ def verify_answers():
         check(m["ans"] < 5, f"PB{pb}: the answer is a real option, not f)")
         out, err = run("\n".join(m["code"]))
         check(err is None, f"PB{pb}: the snippet runs without raising ({err})")
-        check(norm(out) == RUNTIME[pb],
+        check(norm(out) == norm(RUNTIME[pb]),
               f"PB{pb}: really prints {out.strip()!r}, expected {RUNTIME[pb]!r}")
         check(norm(out) == norm(correct) or
               [float(x) for x in re.findall(r"-?\d+\.?\d*", norm(out))] ==
@@ -92,10 +94,8 @@ def verify_answers():
                     for line in block)
     out, err = run(src)
     lines = out.splitlines()
-    check(err is None and lines[0] == "13 <class 'int'> 6.5 <class 'float'>",
-          f"Q-2 2) first print really gives {lines[0] if lines else None!r}")
-    check(len(lines) > 1 and lines[1] == "True",
-          f"Q-2 2) second print really gives {lines[1] if len(lines) > 1 else None!r}")
+    check(err is None and lines and lines[0] == "17 <class 'int'> <class 'float'>",
+          f"Q-2 2) cell really gives {lines[0] if lines else None!r}")
 
     def rows(n):
         total, out = 0, []
@@ -105,9 +105,9 @@ def verify_answers():
             out.append(f"Row {i} : " + " ".join(str(j) for j in row))
         return out, total
     exp, total = rows(4)
-    check(exp == ["Row 1 : 1", "Row 2 : 1 2", "Row 3 : 1 3", "Row 4 : 1 2 4"]
-          and total == 8,
-          "Q-2 3) worked example (n = 4) really gives those rows and 8 divisors")
+    check(exp == ["Row 1 : 1", "Row 2 : 1 2", "Row 3 : 1 3", "Row 4 : 1 2 4"],
+          f"Q-2 3) worked example (n = 4) really gives {exp}")
+    check(total == 8, "Q-2 3) example is consistent (8 divisors in total)")
 
     def bill(prev, cur, kind):
         units = cur - prev
@@ -269,41 +269,54 @@ def verify_offline(letter, tpl, by_opts, audit_txt):
     verify_header(doc, tpl, True, label)
 
     rows = doc.tables[1].rows
-    block = rows[1]
-    check(block.cells[0].text.strip() == "Q-1"
-          and "1 Mark each" in block.cells[2].text
-          and block.cells[3].text.strip() == mark(len(MCQS)),
-          f"{label}: Q-1 block row = compulsory MCQ, 1 mark each, "
-          f"{mark(len(MCQS))}")
+    blocks = [r for r in rows[1:] if r.cells[0].text.strip() == "Q-1"]
+    check([r.cells[1].text.strip() for r in blocks] == ["A)", "B)"],
+          f"{label}: Q-1 has an A) and a B) block, in that order")
+    check("0.5 Marks each" in blocks[0].cells[2].text
+          and blocks[0].cells[3].text.strip() == mark(5),
+          f"{label}: Q-1(A) is the 0.5-mark block, total {mark(5)}")
+    check("1 Mark each" in blocks[1].cells[2].text
+          and blocks[1].cells[3].text.strip() == mark(5),
+          f"{label}: Q-1(B) is the 1-mark block, total {mark(5)}")
+
     mcq_rows = [(r.cells[1].text.strip(), r.cells[2].text,
                  r.cells[3].text.strip())
-                for r in rows[2:] if re.search(r"\([a-f]\)", r.cells[2].text)]
-    pb_desc = 0
-    check(len(mcq_rows) == len(MCQS)
-          and sum(marks_value(m) for _, _, m in mcq_rows) == len(MCQS),
-          f"{label}: {len(mcq_rows)} MCQs worth "
-          f"{sum(marks_value(m) for _, _, m in mcq_rows)} marks from the PB (§5)")
-    q2_rows = [r for r in rows[2:] if not is_mcq(r.cells[2].text)]
+                for r in rows[2:] if is_mcq(r.cells[2].text)]
+    check(len(mcq_rows) == len(MCQS),
+          f"{label}: {len(mcq_rows)} MCQs printed (expected {len(MCQS)})")
+    n_a = sum(1 for m in MCQS if m["group"] == "A")
+    check(all(m == mark(0.5) for _, _, m in mcq_rows[:n_a])
+          and all(m == mark(1) for _, _, m in mcq_rows[n_a:]),
+          f"{label}: first {n_a} MCQs marked {mark(0.5)}, the rest {mark(1)}")
+    check(sum(marks_value(m) for _, _, m in mcq_rows) == 10,
+          f"{label}: MCQ marks total "
+          f"{sum(marks_value(m) for _, _, m in mcq_rows):g} = the PB quota (§5)")
+
+    # a Q-2 row is neither an MCQ row nor one of the Q-1 block rows
+    q2_rows = [r for r in rows[2:]
+               if not is_mcq(r.cells[2].text)
+               and r.cells[1].text.strip() not in ("A)", "B)")]
     check(len(q2_rows) == len(Q2), f"{label}: Q-2 has {len(Q2)} sub-questions")
     for r, q in zip(q2_rows, Q2):
         check(marks_value(r.cells[3].text) == q["marks"]
               and r.cells[3].text.strip() == mark(q["marks"]),
               f"{label}: Q-2 {r.cells[1].text.strip()} marks "
               f"{r.cells[3].text.strip()} (Unit {q['unit']})")
-        if q["pb"]:
-            pb_desc += q["marks"]
-    outside = sum(q["marks"] for q in Q2 if not q["pb"])
-    desc = sum(marks_value(r.cells[3].text) for r in q2_rows)
-    check(desc == 8 and outside == 6,
-          f"{label}: Q-2 carries {desc} marks of which {outside} are outside "
-          f"the PB (§5)")
-    check(len(MCQS) + pb_desc == 10,
-          f"{label}: PB total = {len(MCQS)} MCQ + {pb_desc} descriptive = 10 (§5)")
+    check(sum(q["marks"] for q in Q2) == 6,
+          f"{label}: Q-2 carries 6 marks, all outside the PB (§5)")
+    # FY instruction Case 1 / guidelines §6: mixed marks need >= 7 per block
+    check(len(blocks[0:1]) and len(mcq_rows[:n_a]) == 10 and len(mcq_rows[n_a:]) == 5,
+          f"{label}: 10 x 0.5 in Q-1(A) and 5 x 1 in Q-1(B), as requested")
+    print("  ---- §6 NOTE: Q-1(B) has 5 questions, below the FY instruction's")
+    print("       minimum of 7 per block for mixed 0.5/1-mark MCQs; written")
+    print("       HOD clearance is required for this pattern.")
     check(all(len(parse_options(b)) == 6 for _, b, _ in mcq_rows),
           f"{label}: every MCQ prints six options (§6)")
     check([by_opts[frozenset(parse_options(b).values())]["pb"]
-           for _, b, _ in mcq_rows] == [MCQS[i]["pb"] for i in SET_ORDER[letter]],
-          f"{label}: MCQ sequence matches SET_ORDER")
+           for _, b, _ in mcq_rows]
+          == [MCQS[i]["pb"]
+              for i in SET_ORDER[letter]["A"] + SET_ORDER[letter]["B"]],
+          f"{label}: MCQ sequence matches SET_ORDER (A block then B block)")
     for sub, body, _ in mcq_rows:
         o = parse_options(body)
         check(o["e"] == "Error" and o["f"] == "None of the above",
@@ -342,26 +355,26 @@ def verify_offline(letter, tpl, by_opts, audit_txt):
 
     block_txt = audit_txt.split(f"--- ANSWER KEY SET {letter}")[1] \
                          .split("--- ANSWER KEY")[0]
-    key = dict(re.findall(r"(Q-1 \d+\))\s+(\([a-f]\))", block_txt))
-    for sub, body, _ in mcq_rows:
+    key = dict(re.findall(r"(Q-1\([AB]\) \d+\))\s+(\([a-f]\))", block_txt))
+    seq = []
+    for i, (sub, body, _) in enumerate(mcq_rows):
         o = parse_options(body)
         m = by_opts[frozenset(o.values())]
         right = [L for L, v in o.items() if v == m["opts"][m["ans"]]]
-        check(len(right) == 1 and key.get(f"Q-1 {sub}") == f"({right[0]})",
-              f"{label}: key Q-1 {sub} = ({right[0]}) is the printed position of "
-              f"the correct option (PB{m['pb']})")
-    seq = [next(L for L, v in parse_options(b).items()
-                if v == by_opts[frozenset(parse_options(b).values())]
-                ["opts"][by_opts[frozenset(parse_options(b).values())]["ans"]])
-           for _, b, _ in mcq_rows]
-    check(all(x != y for x, y in zip(seq, seq[1:])),
-          f"{label}: no two consecutive answers share a letter {seq}")
+        grp = "A" if i < n_a else "B"
+        check(len(right) == 1 and key.get(f"Q-1({grp}) {sub}") == f"({right[0]})",
+              f"{label}: key Q-1({grp}) {sub} = ({right[0]}) is the printed "
+              f"position of the correct option (PB{m['pb']})")
+        seq.append(right[0])
+    for grp, part in (("A", seq[:n_a]), ("B", seq[n_a:])):
+        check(all(x != y for x, y in zip(part, part[1:])),
+              f"{label}: Q-1({grp}) has no two consecutive equal answers {part}")
     mains = {r.cells[0].text.strip() for r in rows[1:] if r.cells[0].text.strip()}
     check(mains == {"Q-1", "Q-2"}, f"{label}: main questions = {sorted(mains)}")
     no_faculty_leak(doc, label)
     template_controls(doc, doc.tables[1], label, OFFLINE_GEOM)
-    return [parse_options(r.cells[2].text) for r in rows[2:2 + len(MCQS)]], \
-           [r.cells[2].text for r in rows[2 + len(MCQS):]]
+    return ([parse_options(b) for _, b, _ in mcq_rows],
+            [r.cells[2].text for r in q2_rows], n_a)
 
 
 def verify_online(tpl):
@@ -407,7 +420,8 @@ def verify_documents():
                  ).read_text()
     opts, tail = {}, {}
     for letter in ("A", "B", "C"):
-        opts[letter], tail[letter] = verify_offline(letter, tpl, by_opts, audit_txt)
+        opts[letter], tail[letter], _ = verify_offline(letter, tpl, by_opts,
+                                                     audit_txt)
     verify_online(tpl)
 
     print("\n== sets differ only in MCQ sequence (§4, §7) ==")
@@ -427,31 +441,34 @@ def verify_documents():
                if v == by_opts[frozenset(o.values())]["opts"]
                [by_opts[frozenset(o.values())]["ans"]]]
         c = Counter(seq)
-        check(max(c.values()) <= 3 and len(set(seq)) >= 4,
-              f"SET {letter} answer-key spread {dict(sorted(c.items()))}")
+        check(max(c.values()) <= len(seq) * 0.3 and len(set(seq)) >= 4,
+              f"SET {letter} answer-key spread {dict(sorted(c.items()))} over "
+              f"{len(seq)} questions - no letter above 30%")
 
 
 def verify_blueprint():
     print("\n== 3. blueprint, PB split and file inventory (§3, §5) ==")
     unit_offline = {1: 0, 2: 0, 3: 0}
     for m in MCQS:
-        unit_offline[m["unit"]] += 1
+        unit_offline[m["unit"]] += m["marks"]
     for q in Q2:
         unit_offline[q["unit"]] += q["marks"]
     on_u2, on_u3 = Q3[0]["unit_online"]
     total = {1: unit_offline[1], 2: unit_offline[2] + on_u2,
              3: unit_offline[3] + on_u3}
     check(sum(unit_offline.values()) == 16,
-          f"offline total = {sum(unit_offline.values())} (§5)")
+          f"offline total = {sum(unit_offline.values()):g} (§5)")
     check(unit_offline == OFFLINE_UNIT_TARGET,
-          f"offline unit split {unit_offline[1]}/{unit_offline[2]}/"
-          f"{unit_offline[3]} = target 2/6/8 (§3)")
+          f"offline unit split {unit_offline[1]:g}/{unit_offline[2]:g}/"
+          f"{unit_offline[3]:g} = target 2/6/8 (§3)")
     check(total == T1_UNIT_BLUEPRINT,
-          f"T1 unit total {total[1]}/{total[2]}/{total[3]} = blueprint 2/10/13 (§3)")
-    pb = sum(1 for _ in MCQS) + sum(q["marks"] for q in Q2 if q["pb"])
+          f"T1 unit total {total[1]:g}/{total[2]:g}/{total[3]:g} = blueprint "
+          f"2/10/13 (§3)")
+    pb = sum(m["marks"] for m in MCQS) + sum(q["marks"] for q in Q2
+                                             if q["pb"])
     outside = sum(q["marks"] for q in Q2 if not q["pb"])
     check(pb == 10 and outside == 6,
-          f"offline PB = {pb} and outside PB = {outside} (§5)")
+          f"offline PB = {pb:g} and outside PB = {outside:g} (§5)")
     names = sorted(f.name for f in OUTDIR.glob("*.docx"))
     check(len(names) == 4 and sum(n.startswith("SET") for n in names) == 3
           and sum(n.startswith("ONLINE") for n in names) == 1,

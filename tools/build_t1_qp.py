@@ -88,59 +88,93 @@ MARK_SIZE = 20    # 10 pt marks / Bloom columns
 HEADER_SIZE = 24  # 12 pt institute header block (template size)
 
 # --------------------------------------------------------------------------- #
-# Q-1 : eight 1-mark MCQs, all from the T1 Practice Book (guidelines §5, §6)
+# Q-1 : fifteen MCQs from the T1 Practice Book - ten at 0.5 mark in Q-1(A) and
+#       five at 1 mark in Q-1(B) (guidelines §6 "mixed marks grouping", and the
+#       FY instruction Case 1: 0.5-mark MCQs in Q-1(A), 1-mark MCQs in Q-1(B)).
 #
-# Every item below is an execution / trace question whose STEM is unchanged
-# from the Practice Book - §5 keeps such a question classified as PB even when
-# the options are changed.  The options were rebuilt to exactly six with
-# e) Error and f) None of the above (§6), their order is FIXED (§4 allows only
-# the MCQ *sequence* to be reshuffled) and every answer was re-derived by
-# executing the code here rather than copied from the PB key.
-# Recall-only PB items (Sr 1-20) and the trivial algorithm trace (Sr 21) are
-# deliberately not used: §4 forbids easy recall questions.
+#       10 x 0.5 + 5 x 1 = 10 marks = exactly the offline PB quota of §5, so
+#       every MCQ is a PB question with its stem UNCHANGED (only the options
+#       were rebuilt to six, which §5 says still counts as PB).
+#
+#       §6 CONFLICT, NOT YET CLEARED: the FY instruction also requires at least
+#       seven questions in EACH of Q-1(A) and Q-1(B) when 0.5 and 1 mark MCQs
+#       are mixed.  Q-1(B) has five, so this pattern needs the written HOD/FY
+#       clarification that §6 asks for.  See the audit sheet.
+#
+#       Every answer below was re-derived by executing the code, not copied
+#       from the PB key.  Options are FIXED in all three sets (§4 allows only
+#       the MCQ sequence to be reshuffled) and output MCQs end with
+#       e) Error and f) None of the above.
 # --------------------------------------------------------------------------- #
 MCQS = [
-    dict(pb=66, unit=2, bloom="A", ans=2, is_output=True,
+    # ---- Q-1(A) : 0.5 mark each - four from Unit 2, six from Unit 3 ---------
+    dict(pb=66, unit=2, group="A", marks=0.5, bloom="A", ans=0, is_output=True,
          stem=["What will be the output of this program?"],
          code=["print(6 + 5 - 4 * 3 / 2 % 1)"],
-         opts=["11", "15", "11.0", "7", "Error", "None of the above"]),
-    dict(pb=74, unit=2, bloom="A", ans=3, is_output=True,
+         opts=["11.0", "11", "15", "7", "Error", "None of the above"]),
+    dict(pb=74, unit=2, group="A", marks=0.5, bloom="A", ans=3, is_output=True,
          stem=["What will be the output of the following program on execution?"],
          code=["a=4", "b=6", "c=3", "d=2", "print(a+d**b*c/a-b)"],
          opts=["46", "52.0", "48.0", "46.0", "Error", "None of the above"]),
-    dict(pb=71, unit=2, bloom="A", ans=1, is_output=True,
+    dict(pb=84, unit=2, group="A", marks=0.5, bloom="A", ans=1, is_output=True,
+         stem=["What is the output of this expression?"],
+         code=["print(3**1**3/True)"],
+         opts=["3", "3.0", "27", "1", "Error", "None of the above"]),
+    dict(pb=68, unit=2, group="A", marks=0.5, bloom="A", ans=2, is_output=True,
+         stem=["What will be the value of X in the following Python expression?"],
+         code=["X = 2+9*((3*12)-8)/10", "print(X)"],
+         opts=["30.8", "28.4", "27.2", "30", "Error", "None of the above"]),
+    dict(pb=166, unit=3, group="A", marks=0.5, bloom="N", ans=3, is_output=True,
+         stem=["What is the output of the following code?"],
+         code=["val = 154", "while(not(val)):", "    val**=2",
+               "else:", "    val//=2", "print(val)"],
+         opts=["154", "11", "23716", "77", "Error", "None of the above"]),
+    dict(pb=161, unit=3, group="A", marks=0.5, bloom="A", ans=0, is_output=True,
+         stem=["What is the value of x after the following nested for loop "
+               "completes its execution?"],
+         code=["x = 0", "for i in range(1,10):",
+               "    for j in range(-1, -10, -1):", "        x += 1",
+               "print(x)"],
+         opts=["81", "90", "80", "99", "Error", "None of the above"]),
+    dict(pb=158, unit=3, group="A", marks=0.5, bloom="N", ans=2, is_output=True,
+         stem=["What is the output of the following nested loop?"],
+         code=["for num in range(26, 30):", "    for i in range(2, num):",
+               "        if num%i == 1:", "            print(num, end=',')",
+               "            break"],
+         opts=["26,27,28", "27,29", "26,27,28,29,", "26,27,28,29",
+               "Error", "None of the above"]),
+    dict(pb=164, unit=3, group="A", marks=0.5, bloom="N", ans=1, is_output=True,
+         stem=["What is the output of the following code?"],
+         code=["c=1", "s=0", "while c<=8:", "    c=c-1", "    s=s+c",
+               "    c=c+2", "print(s)"],
+         opts=["30", "28", "21", "35", "Error", "None of the above"]),
+    dict(pb=170, unit=3, group="A", marks=0.5, bloom="N", ans=3, is_output=True,
+         stem=["What will be the output of the following program on execution?"],
+         code=["for x in range(0,15):", "    if(x%3==0):", "        continue",
+               "    if(x%5==0):", "        continue", "    if(x%7==0):",
+               "        break", "    print(x,end=\" \")"],
+         opts=["0 1 2 4", "1 2 3 4", "1 2 4 7", "1 2 4", "Error",
+               "None of the above"]),
+    dict(pb=160, unit=3, group="A", marks=0.5, bloom="A", ans=2, is_output=True,
+         stem=["What should be the output of the following python code snippet?"],
+         code=["a=5", "b=7", "c=2", "if a>b:", "    a,b = b,a",
+               "if a>c:", "    a,c = c,a", "if b>c:", "    b,c = c,b",
+               "print(a,b,c,end=\",\")"],
+         opts=["2,5,7", "7,5,2", "2 5 7,", "7 5 2,", "Error",
+               "None of the above"]),
+    # ---- Q-1(B) : 1 mark each - two from Unit 2, three from Unit 3 ---------
+    dict(pb=71, unit=2, group="B", marks=1, bloom="A", ans=1, is_output=True,
          stem=["What should be the output of the following python code snippet:"],
          code=["x=0.0", "y=48>0", "z=11<7",
                "print(not(float(x or y or z)))"],
          opts=["True", "False", "0.0", "No output", "Error",
                "None of the above"]),
-    dict(pb=114, unit=3, bloom="N", ans=1, is_output=True,
-         stem=["What will be the output of given Python code?"],
-         code=["n=7", "c=0", "while(n):", "    if(n>5):", "        c=c+n-1",
-               "        n=n-1", "    else:", "        break",
-               "print(n)", "print(c)"],
-         opts=["4 16", "5 11", "6 7", "5 10", "Error", "None of the above"]),
-    dict(pb=150, unit=3, bloom="N", ans=2, is_output=True,
-         stem=["What will be the output of the following snippet?"],
-         code=["a = True", "b = False", "c = False",
-               "if not a or b:", "    print (1)",
-               "elif not a or not b and c:", "    print (2)",
-               "elif not a or b or not b and a:", "    print (3)",
-               "else:", "    print (4)"],
-         opts=["1", "2", "3", "4", "Error", "None of the above"]),
-    dict(pb=166, unit=3, bloom="N", ans=2, is_output=True,
-         stem=["What is the output of the following code?"],
-         code=["val = 154", "while(not(val)):", "    val**=2",
-               "else:", "    val//=2", "print(val)"],
-         opts=["154", "11", "77", "23716", "Error", "None of the above"]),
-    dict(pb=170, unit=3, bloom="N", ans=0, is_output=True,
+    dict(pb=76, unit=2, group="B", marks=1, bloom="N", ans=0, is_output=True,
          stem=["What will be the output of the following program on execution?"],
-         code=["for x in range(0,15):", "    if(x%3==0):", "        continue",
-               "    if(x%5==0):", "        continue", "    if(x%7==0):",
-               "        break", "    print(x,end=\" \")"],
-         opts=["1 2 4", "0 1 2 4", "1 2 3 4", "1 2 4 7", "Error",
-               "None of the above"]),
-    dict(pb=177, unit=3, bloom="N", ans=1, is_output=True,
+         code=["a=0", "b=6", "c=9", "d=10",
+               "x=(a or b) and ((a or c) or (b and d))", "print(x)"],
+         opts=["9", "6", "0", "10", "Error", "None of the above"]),
+    dict(pb=177, unit=3, group="B", marks=1, bloom="N", ans=3, is_output=True,
          stem=["What will be the output of the following program on execution?"],
          code=["x=0", "count=0", "for x in range(10):", "    while x<15:",
                "        if x<0:", "            pass",
@@ -148,56 +182,74 @@ MCQS = [
                "        elif x%3==0:", "            x+=1", "            continue",
                "        elif count==5:", "            break",
                "        count+=1", "print(x,count)"],
-         opts=["10 5", "11 5", "16 5", "14 5", "Error", "None of the above"]),
+         opts=["10 5", "16 5", "14 5", "11 5", "Error", "None of the above"]),
+    dict(pb=114, unit=3, group="B", marks=1, bloom="N", ans=2, is_output=True,
+         stem=["What will be the output of given Python code?"],
+         code=["n=7", "c=0", "while(n):", "    if(n>5):", "        c=c+n-1",
+               "        n=n-1", "    else:", "        break",
+               "print(n)", "print(c)"],
+         opts=["4 16", "6 7", "5 11", "5 10", "Error", "None of the above"]),
+    dict(pb=165, unit=3, group="B", marks=1, bloom="N", ans=1, is_output=True,
+         stem=["What will be the output of the following program on execution?"],
+         code=["x=0", "while x<10:", "    if x%3==0:", "        x+=5",
+               "        continue", "    if x%2==0:", "        x+=14",
+               "    else:", "        x+=1", "else:", "    x+=1", "print(x)"],
+         opts=["10", "12", "11", "0", "Error", "None of the above"]),
 ]
 
-# MCQ sequence per set - the questions and their options are identical in all
-# three sets, only this order changes (guidelines §4).  Orders are chosen so
-# that no two consecutive answers carry the same option letter.
+MCQ_A = [i for i, m in enumerate(MCQS) if m["group"] == "A"]
+MCQ_B = [i for i, m in enumerate(MCQS) if m["group"] == "B"]
+
+# MCQ sequence per set, reshuffled separately inside Q-1(A) and Q-1(B).  The
+# questions and their options are identical in all three sets (§4); the orders
+# are chosen so that no two consecutive answers share an option letter.
 SET_ORDER = {
-    "A": [0, 1, 2, 4, 3, 6, 5, 7],
-    "B": [6, 2, 0, 7, 1, 5, 3, 4],
-    "C": [1, 4, 3, 0, 6, 7, 5, 2],
+    "A": {"A": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "B": [10, 11, 12, 13, 14]},
+    "B": {"A": [3, 0, 6, 1, 9, 2, 4, 7, 5, 8], "B": [12, 10, 13, 11, 14]},
+    "C": {"A": [5, 8, 7, 3, 0, 6, 4, 9, 1, 2], "B": [13, 14, 11, 12, 10]},
 }
 
 # --------------------------------------------------------------------------- #
-# Q-2 : the 6 outside-PB marks plus the 2 Unit-1 PB marks (guidelines §3, §5, §7)
-#       1) PB Sr. No. 30 (algorithm + flowchart), varied to 2 marks - Unit 1
-#       2) outside PB, 3 marks - Unit 2 : precedence, type conversion, logical
-#       3) outside PB, 3 marks - Unit 3 : nested loops and counters
-#       giving the offline unit split 2 / 6 / 8 and PB 10 + outside PB 6
+# Q-2 : the six outside-PB marks (guidelines §5, §7).  All fifteen MCQ marks
+#       are already PB, so Q-2 carries no PB question.  The three sub-questions
+#       put 2 marks on each unit, which with the MCQs (Unit 2 = 4, Unit 3 = 6)
+#       gives the offline blueprint 2 / 6 / 8 exactly.
+#       Unit 1 is an original algorithm-and-flowchart question rather than a
+#       PB item: the only non-recall Unit-1 PB entries (Sr 23-38) are 3-4 mark
+#       descriptive questions and the Unit-1 MCQs (Sr 1-20) are the recall
+#       questions §4 forbids.
 # --------------------------------------------------------------------------- #
 Q2 = [
-    dict(unit=1, bloom="C", marks=2, pb=30,
+    dict(unit=1, bloom="C", marks=2, pb=None,
          body=[
-             ("p", "Write an algorithm and draw a flowchart to arrange the "
-                   "three input numbers x, y and z in descending order."),
+             ("p", "Write an algorithm and draw a flowchart that reads "
+                   "integers one after another until the user enters 0, and "
+                   "then prints how many positive numbers and how many "
+                   "negative numbers were entered. The 0 that stops the input "
+                   "is not counted."),
          ]),
-    dict(unit=2, bloom="A", marks=3, pb=None,
+    dict(unit=2, bloom="A", marks=2, pb=None,
          body=[
              ("p", "The following statements are executed in one cell of a "
                    "Jupyter Notebook:"),
-             ("code", ["p = 17", "q = 5", "r = p / q",
-                       "s = int(r) ** 2 + p % q * 2", "t = s / 2",
-                       "print(s, type(s), t, type(t))",
-                       "print(bool(p % q) and not (s > 20))"]),
-             ("p", "(i)  Write the exact output produced by both print "
-                   "statements."),
-             ("p", "(ii) State the order in which the operators ** , % , * and "
-                   "+ are applied while evaluating s, and explain why s is of "
-                   "type int while t is of type float."),
+             ("code", ["m = 23", "n = 4", "v = m / n",
+                       "w = int(v) * 2 + m % n ** 2",
+                       "print(w, type(w), type(v))"]),
+             ("p", "(i)  Write the exact output produced by the cell."),
+             ("p", "(ii) State which operator is applied first in the "
+                   "expression for w, and explain why w is of type int while "
+                   "v is of type float."),
          ]),
-    dict(unit=3, bloom="C", marks=3, pb=None,
+    dict(unit=3, bloom="C", marks=2, pb=None,
          body=[
              ("p", "Write a Python program that reads a positive integer n "
                    "from the user and, for every row i from 1 to n, prints the "
                    "row number followed by all the numbers from 1 to i that "
-                   "divide i exactly. After all the rows have been printed, "
-                   "print the total number of divisors printed. Do not use any "
-                   "built-in function other than input(), int() and print()."),
+                   "divide i exactly. Do not use any built-in function other "
+                   "than input(), int() and print()."),
              ("p", "Example :  Input  n = 4"),
              ("code", ["Row 1 : 1", "Row 2 : 1 2", "Row 3 : 1 3",
-                       "Row 4 : 1 2 4", "Total divisors printed = 8"]),
+                       "Row 4 : 1 2 4"]),
          ]),
 ]
 
@@ -638,15 +690,21 @@ def build_set(letter):
     repeat_header_row(tables[1]._tbl.findall(qn("w:tr"))[0])
 
     # ---- offline ----------------------------------------------------------
-    rows_spec = [dict(q="Q-1", sub="Sr. No.",
-                      blocks=[("p", "MCQ ( 1 Mark each )")],
-                      marks=mark(len(MCQS)), bloom="")]
+    rows_spec = []
     key = {}
-    for n, src in enumerate(SET_ORDER[letter], start=1):
-        mcq = MCQS[src]
-        rows_spec.append(dict(q="", sub=f"{n})", mcq=mcq, opts=mcq["opts"],
-                              marks=mark(1), bloom=mcq["bloom"]))
-        key[f"Q-1 {n})"] = "(%s)" % "abcdef"[mcq["ans"]]
+    # Q-1(A) = 0.5-mark MCQs, Q-1(B) = 1-mark MCQs (FY instruction Case 1)
+    for grp, label in (("A", "MCQ ( 0.5 Marks each )"),
+                       ("B", "MCQ ( 1 Mark each )")):
+        rows_spec.append(dict(q="Q-1", sub=f"{grp})", blocks=[("p", label)],
+                              marks=mark(sum(MCQS[i]["marks"]
+                                             for i in SET_ORDER[letter][grp])),
+                              bloom=""))
+        for n, src in enumerate(SET_ORDER[letter][grp], start=1):
+            mcq = MCQS[src]
+            rows_spec.append(dict(q="", sub=f"{n})", mcq=mcq,
+                                  opts=mcq["opts"], marks=mark(mcq["marks"]),
+                                  bloom=mcq["bloom"]))
+            key[f"Q-1({grp}) {n})"] = "(%s)" % "abcdef"[mcq["ans"]]
     for n, q in enumerate(Q2, start=1):
         rows_spec.append(dict(q="Q-2" if n == 1 else "", sub=f"{n})",
                               blocks=q["body"], marks=mark(q["marks"]),
@@ -675,11 +733,12 @@ def build_set(letter):
 def write_audit_sheet(keys, path):
     unit_marks = {1: 0, 2: 0, 3: 0}
     for m in MCQS:
-        unit_marks[m["unit"]] += 1
+        unit_marks[m["unit"]] += m["marks"]
     for q in Q2:
         unit_marks[q["unit"]] += q["marks"]
     on_u2, on_u3 = Q3[0]["unit_online"]
-    pb_marks = len(MCQS) + sum(q["marks"] for q in Q2 if q["pb"])
+    pb_marks = sum(m["marks"] for m in MCQS) + sum(q["marks"] for q in Q2
+                                                   if q["pb"])
     out_marks = sum(q["marks"] for q in Q2 if not q["pb"])
     total_unit = {1: unit_marks[1], 2: unit_marks[2] + on_u2,
                   3: unit_marks[3] + on_u3}
@@ -689,24 +748,30 @@ def write_audit_sheet(keys, path):
          "QP setter MDP | exam 29-Sep-2026 | deadline 25-Sep-2026 12:00 midnight",
          "",
          "MARKS AND BLUEPRINT CHECK",
-         f"  offline total ....... {sum(1 for _ in MCQS) + sum(q['marks'] for q in Q2)}"
+         f"  offline total ....... {sum(m['marks'] for m in MCQS) + sum(q['marks'] for q in Q2):g}"
          f" (required 16)",
-         f"  from Practice Book .. {pb_marks}  (required 10)",
-         f"  outside PB .......... {out_marks}  (required 6)",
+         f"  Q-1(A) 0.5-mark MCQs  {len(MCQ_A)} x 0.5 = {sum(m['marks'] for m in MCQS if m['group'] == 'A'):g}"
+         f"   Q-1(B) 1-mark MCQs {len(MCQ_B)} x 1 = {sum(m['marks'] for m in MCQS if m['group'] == 'B'):g}",
+         f"  from Practice Book .. {pb_marks:g}  (required 10)",
+         f"  outside PB .......... {out_marks:g}  (required 6)",
          f"  online total ........ {sum(q['marks'] for q in Q3)} (required 9,"
          f" entirely outside PB)",
-         f"  offline unit split .. {unit_marks[1]} / {unit_marks[2]} /"
-         f" {unit_marks[3]}   (target 2 / 6 / 8)",
+         f"  offline unit split .. {unit_marks[1]:g} / {unit_marks[2]:g} /"
+         f" {unit_marks[3]:g}   (target 2 / 6 / 8)",
          f"  online unit split ... 0 / {on_u2} / {on_u3}",
-         f"  T1 unit total ....... {total_unit[1]} / {total_unit[2]} /"
-         f" {total_unit[3]}   (blueprint 2 / 10 / 13)",
+         f"  T1 unit total ....... {total_unit[1]:g} / {total_unit[2]:g} /"
+         f" {total_unit[3]:g}   (blueprint 2 / 10 / 13)",
          "",
          "QUESTION TRACEABILITY (guidelines §5)",
          "  position | unit | source            | marks | class      | bloom",
          ]
-    for i, m in enumerate(MCQS, start=1):
-        L.append(f"  MCQ {i:>2}    |  {m['unit']}   | PB Sr. No. {m['pb']:>3}    |"
-                 f"   1   | PB         | {m['bloom']}")
+    for grp in ("A", "B"):
+        for n, i in enumerate((j for j, m in enumerate(MCQS)
+                               if m["group"] == grp), start=1):
+            m = MCQS[i]
+            L.append(f"  Q-1({grp}) {n:>2} |  {m['unit']}   |"
+                     f" PB Sr. No. {m['pb']:>3}    |  {m['marks']:g}  |"
+                     f" PB         | {m['bloom']}")
     for i, q in enumerate(Q2, start=1):
         src = f"PB Sr. No. {q['pb']:>3}" if q["pb"] else "original"
         cls = "PB        " if q["pb"] else "outside PB"
@@ -720,9 +785,14 @@ def write_audit_sheet(keys, path):
         for k, v in keys[letter].items():
             L.append(f"  {k:<12} {v}")
         L.append("")
-    L.append("OPEN ITEM (§6): the preferred 10 x 0.5 + 5 x 1 MCQ pattern needs")
-    L.append(f"written HOD clearance; this paper uses {len(MCQS)} 1-mark MCQs "
-             "in Q-1.")
+    L.append("REQUIRED BEFORE SUBMISSION (§6 / FY instruction Case 1):")
+    L.append(f"  this paper uses the 10 x 0.5 + 5 x 1 MCQ pattern. The FY")
+    L.append("  instruction requires at least SEVEN questions in each of")
+    L.append(f"  Q-1(A) and Q-1(B) when 0.5 and 1 mark MCQs are mixed; Q-1(A)")
+    L.append(f"  has {len(MCQ_A)} but Q-1(B) has only {len(MCQ_B)}. Written")
+    L.append("  clarification from the HOD / FY QP authority must be obtained")
+    L.append("  for this pattern, exactly as the guidelines ask. Until it is,")
+    L.append("  the compliant alternative is Case 2 (all MCQs of one mark).")
     L.append("")
     L.append("PB Sr. No. 159 was rejected: its printed code cannot be")
     L.append("re-indented unambiguously from the Practice Book and it does not")
@@ -749,21 +819,27 @@ S4  Setting rules     : conceptual/reasoning questions only; no definitions,
     formulae, short notes, True/False, Yes/No or fill in the blanks; Q-1 is
     the compulsory MCQ; 3 main questions in total; 3 sets with identical
     questions and only the MCQ sequence reshuffled; no faculty name used.
-S5  PB split          : offline = 8 MCQ marks + 2 marks of PB Sr. No. 30 = 10
-    from the Practice Book, and 6 marks outside it; online 9 marks entirely
-    outside it. Every PB question keeps its stem unchanged (only the options
-    were rebuilt to six), so each remains a PB question.
+S5  PB split          : offline = 10 x 0.5 + 5 x 1 = 10 MCQ marks, all from
+    the Practice Book, and 6 marks outside it (the whole of Q-2); online 9
+    marks entirely outside it. Every PB question keeps its stem unchanged
+    (only the options were rebuilt to six), so each remains a PB question.
 S6  MCQ rules         : every MCQ is 1 mark with exactly 6 options; every
     output MCQ uses e) Error and f) None of the above; every output MCQ was
     executed (see tools/verify_qp.py) before finalising.
-    OPEN ITEM: the preferred 10 x 0.5 + 5 x 1 pattern was NOT used because it
-    needs written HOD clearance (it clashes with the "at least seven
-    questions in Q-1(A) and Q-1(B)" rule). This paper uses the compliant
-    Case-2 pattern: eight 1-mark MCQs, all compulsory in Q-1.
+    *** CLEARANCE REQUIRED BEFORE SUBMISSION ***
+    This paper uses the 10 x 0.5 + 5 x 1 pattern.  Case 1 of the FY
+    instruction requires at least SEVEN questions in EACH of Q-1(A) and
+    Q-1(B) when 0.5-mark and 1-mark MCQs are mixed; Q-1(A) has 10 but Q-1(B)
+    has only 5.  §6 of the guidelines asks for written clarification from the
+    HOD / FY QP authority before using five 1-mark MCQs - obtain it, or fall
+    back to Case 2 (all MCQs of one mark, all compulsory in Q-1).
     Recall-only PB items (Sr 1-20) and the trivial algorithm trace (Sr 21) are
     deliberately not used, because §4 forbids easy recall questions; PB
     Sr. No. 159 was dropped because its code cannot be re-indented
-    unambiguously and it does not reproduce the printed key.
+    unambiguously and it does not reproduce the printed key.  Unit 1 is an
+    original algorithm-and-flowchart question rather than a PB item, because
+    the only non-recall Unit-1 PB entries (Sr 23-38) are 3-4 mark descriptive
+    questions and the Unit-1 MCQs are the recall questions §4 forbids.
 S7  Workflow          : blueprint frozen first; PB serial numbers recorded in
     the faculty-only audit sheet; outside-PB questions test operator
     precedence, type conversion, logical operators, nested decisions,
