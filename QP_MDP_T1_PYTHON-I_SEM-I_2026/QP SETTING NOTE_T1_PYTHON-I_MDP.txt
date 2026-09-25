@@ -50,6 +50,13 @@ S11 Audit             : run tools/verify_qp.py; it re-executes the MCQ code,
     split, the PB/outside-PB split, the three sets and the confidentiality of
     the student copies.
 
-FILES
-  SET A/B/C_T1_PYTHON-1_TEST PAPER_SEM I_MDP.docx  -> student papers
-  ANSWER KEY + AUDIT SHEET (faculty only)          -> never send with the QP
+FILES  - offline and online are issued as separate papers, as the test itself
+is held in two sittings (offline 2:15-3:30 pm, online 4:15-5:30 pm):
+  SET A/B/C_T1_PYTHON-1_TEST PAPER (OFFLINE)_SEM I_MDP.docx -> three sets
+  ONLINE (COMMON)_T1_PYTHON-1_TEST PAPER_SEM I_MDP.docx     -> one common paper
+      §4 requires the three sets to carry identical questions with only the
+      MCQ sequence reshuffled.  The online paper contains no MCQ, so a single
+      online paper serves all three sets.  Its 'Set:' box reads 'Set: 1'
+      because that box is 0.86 inch wide at 16 pt and cannot hold a word -
+      change it if the department prefers a different label.
+  AUDIT SHEET AND ANSWER KEY (faculty only) -> never send with the QP

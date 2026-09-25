@@ -34,7 +34,7 @@ non-conflicting pattern (Case 2: ten 1-mark MCQs, all compulsory in Q-1).
 """
 
 import copy
-import shutil
+import io
 from pathlib import Path
 
 from docx import Document
@@ -404,13 +404,17 @@ def rebuild_question_table(tbl, rows_spec, online=False):
     """rows_spec entries: q, sub, blocks | (stem, code, opts), marks, bloom"""
     trs = tbl.findall(qn("w:tr"))
     if online:
-        # the ONLINE table has no separate header row: row 0 is
-        # 'Q-3 | (A) | <empty> | Marks | Bloom Taxonomy'
+        # The ONLINE table has no separate header row: row 0 is
+        # 'Q-3 | (A) | <empty> | Marks | Bloom Taxonomy' and row 1 is the
+        # template's own empty question row.  Row 0 therefore becomes the
+        # header - its 'Q-3' / '(A)' placeholders are cleared so that the
+        # number is not printed twice - and row 1 supplies the prototype,
+        # which keeps the template's own question row height (§10).
         header = trs[0]
         for tc in header.findall(qn("w:tc"))[:3]:
             clear_cell(tc)
             add_para(tc)
-        proto_q = copy.deepcopy(header)
+        proto_q = trs[1]
     else:
         header = trs[0]
         proto_q = trs[1]
@@ -508,22 +512,50 @@ def fill_header(tbl, offline):
              bold=True, size=HEADER_SIZE)
 
 
-def set_set_letter(doc, letter):
+def set_set_letter(doc, letter, current="A"):
     n = 0
     for txbx in doc.element.body.iter(qn("w:txbxContent")):
         for t in txbx.iter(qn("w:t")):
-            if t.text == "A":
+            if t.text == current:
                 t.text = letter
                 n += 1
     return n
 
 
+def page_break_index(doc):
+    """body index of the paragraph that carries the section page break."""
+    for i, el in enumerate(doc.element.body):
+        if el.tag == qn("w:p"):
+            for br in el.findall(".//" + qn("w:br")):
+                if br.get(qn("w:type")) == "page":
+                    return i
+    raise AssertionError("template page break not found")
+
+
+def split_pages(doc, keep):
+    """Cut a combined offline+online paper down to one of its two pages.
+
+    The template holds both pages in a single w:sectPr section, separated by
+    one explicit page-break paragraph, so a page is removed by dropping the
+    body elements on the other side of that paragraph.  Everything else -
+    borders, merged cells, row heights, column widths, the Bloom table and the
+    section properties - is left exactly as the template defines it (§10).
+    """
+    body = doc.element.body
+    br = page_break_index(doc)
+    sect = body.find(qn("w:sectPr"))
+    kids = [el for el in list(body) if el is not sect]
+    for el in (kids[br:] if keep == "offline" else kids[:br + 1]):
+        body.remove(el)
+    return doc
+
+
 # --------------------------------------------------------------------------- #
 # build
 # --------------------------------------------------------------------------- #
-def build_set(letter, outpath):
-    shutil.copyfile(TEMPLATE, outpath)
-    doc = Document(str(outpath))
+def build_set(letter):
+    """Build the complete two-page paper in memory and return it as bytes."""
+    doc = Document(str(TEMPLATE))
 
     assert replace_text_everywhere(doc, "TEST 1/2/3 ( CO1/CO2/CO3 )",
                                    "TEST 1 ( CO1 )") == 2
@@ -564,8 +596,10 @@ def build_set(letter, outpath):
         key["Q-3 (A)"] = "integrated 9 mark question, outside PB"
     rebuild_question_table(tables[4]._tbl, rows_spec, online=True)
 
-    doc.save(str(outpath))
-    return key
+    buf = io.BytesIO()
+    doc.save(buf)
+    buf.seek(0)
+    return buf, key
 
 
 # --------------------------------------------------------------------------- #
@@ -677,20 +711,45 @@ S11 Audit             : run tools/verify_qp.py; it re-executes the MCQ code,
     split, the PB/outside-PB split, the three sets and the confidentiality of
     the student copies.
 
-FILES
-  SET A/B/C_T1_PYTHON-1_TEST PAPER_SEM I_MDP.docx  -> student papers
-  ANSWER KEY + AUDIT SHEET (faculty only)          -> never send with the QP
+FILES  - offline and online are issued as separate papers, as the test itself
+is held in two sittings (offline 2:15-3:30 pm, online 4:15-5:30 pm):
+  SET A/B/C_T1_PYTHON-1_TEST PAPER (OFFLINE)_SEM I_MDP.docx -> three sets
+  ONLINE (COMMON)_T1_PYTHON-1_TEST PAPER_SEM I_MDP.docx     -> one common paper
+      §4 requires the three sets to carry identical questions with only the
+      MCQ sequence reshuffled.  The online paper contains no MCQ, so a single
+      online paper serves all three sets.  Its 'Set:' box reads 'Set: 1'
+      because that box is 0.86 inch wide at 16 pt and cannot hold a word -
+      change it if the department prefers a different label.
+  AUDIT SHEET AND ANSWER KEY (faculty only) -> never send with the QP
 """]
     path.write_text(L[0], encoding="utf-8")
+
+
+def offline_name(letter):
+    return f"SET {letter}_T1_PYTHON-1_TEST PAPER (OFFLINE)_SEM I_MDP.docx"
+
+
+ONLINE_NAME = "ONLINE (COMMON)_T1_PYTHON-1_TEST PAPER_SEM I_MDP.docx"
 
 
 def main():
     OUTDIR.mkdir(exist_ok=True)
     keys = {}
+    online = None
     for letter in ("A", "B", "C"):
-        name = f"SET {letter}_T1_PYTHON-1_TEST PAPER_SEM I_MDP.docx"
-        keys[letter] = build_set(letter, OUTDIR / name)
-        print("written:", OUTDIR / name)
+        buf, keys[letter] = build_set(letter)
+        off = split_pages(Document(buf), "offline")
+        off.save(str(OUTDIR / offline_name(letter)))
+        print("written:", OUTDIR / offline_name(letter))
+        if online is None:
+            # §4: the three sets carry identical questions and only the MCQ
+            # sequence is reshuffled, so the online paper - which holds no
+            # MCQ - is one common paper for all three sets.
+            buf.seek(0)
+            online = split_pages(Document(buf), "online")
+            set_set_letter(online, "1", current=letter)
+            online.save(str(OUTDIR / ONLINE_NAME))
+            print("written:", OUTDIR / ONLINE_NAME)
     write_audit_sheet(keys, OUTDIR / "AUDIT SHEET AND ANSWER KEY_T1_PYTHON-I_MDP_faculty only.txt")
     write_compliance_note(OUTDIR / "QP SETTING NOTE_T1_PYTHON-I_MDP.txt")
     print("written: faculty-only audit sheet and compliance note")
