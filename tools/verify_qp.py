@@ -3,34 +3,42 @@
 Verification harness for the T1 Python-I question paper (guidelines
 PYTHON-1_T1_QUESTION_PAPER_GENERATION_GUIDELINES.pdf).
 
-1. RUNTIME   every output MCQ is executed and the marked option compared with
-             the real output; the descriptive questions' stated examples are
-             executed; a reference solution of the online question is run to
-             prove the specification is well posed.
-2. RULES     §3 unit blueprint, §4/§7 set rules, §5 PB split, §6 six options
-             with e) Error and f) None of the above, §9 one integrated online
-             question, §10 template controls, §11 confidentiality.
+1. RUNTIME   every MCQ is executed and the marked option compared with the
+             real output; the descriptive questions' worked examples and a
+             reference solution of the online specification are executed to
+             prove both are well posed.
+2. FORMAT    the generated header is compared run by run and paragraph by
+             paragraph with the untouched template, so a collapsed or
+             re-flowed template field cannot pass.
+3. RULES     §3 blueprint, §4/§7 sets, §5 PB split, §6 six options with
+             e) Error and f) None of the above, §9 one integrated online
+             question, §10 template geometry and marks format, §11 audit.
 """
 
 import contextlib
 import io
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 from docx import Document
 from docx.oxml.ns import qn
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_t1_qp import (MCQS, OFFLINE_UNIT_TARGET, ONLINE_NAME, OUTDIR,  # noqa: E402
-                         Q2, Q3, SET_ORDER, T1_UNIT_BLUEPRINT, offline_name)
+from build_t1_qp import (BRANCHES, MCQS, OFFLINE_UNIT_TARGET, ONLINE_NAME,  # noqa: E402
+                         OUTDIR, Q2, Q3, SET_ORDER, SUBJECT, SUBJECT_CODES,
+                         T1_UNIT_BLUEPRINT, mark, offline_name)
 
 FAIL = []
+TEMPLATE = (Path(__file__).resolve().parents[1] / "QP REQUIRED DOCUMENTS"
+            / "04 QP_FORMAT/QP_FORMAT/01 FORMAT_PYTHON-1"
+            / "SET A_T1 to T3_PYTHON-1_TEST PAPER_SEM I_FACUTLY SHORT NAME_FORMAT.docx")
 
-RUNTIME = {54: "6", 107: "4", 165: "12", 167: "2 5", 176: "1 5", 160: "2 5 7"}
-EXPRESSIONS = {64: [512, 64, 512]}
-ERRORS = {86: "ZeroDivisionError"}
-MANUAL = {8, 21}          # concept question and paper algorithm, traced by hand
+# every MCQ answer is re-derived by executing its code; the value below is what
+# the code really prints (trailing separators normalised away)
+RUNTIME = {66: "11.0", 74: "46.0", 71: "False", 114: "5\n11", 150: "3",
+           166: "77", 170: "1 2 4", 177: "11 5"}
 
 
 def check(cond, msg):
@@ -49,99 +57,163 @@ def run(src):
         return buf.getvalue(), type(exc).__name__
 
 
-def numbers(s):
-    return [int(n) for n in re.findall(r"-?\d+", s)]
+def norm(s):
+    return re.sub(r"[\s,]+$", "", s.strip())
+
+
+def marks_value(text):
+    return float(re.sub(r"[][ ]", "", text))
 
 
 # --------------------------------------------------------------------------- #
 def verify_answers():
-    print("== 1. every MCQ answer re-derived from the code itself ==")
-    covered = set(RUNTIME) | set(EXPRESSIONS) | set(ERRORS) | MANUAL
+    print("== 1. every MCQ answer re-derived by executing the code ==")
     pbs = [m["pb"] for m in MCQS]
-    check(set(pbs) == covered and len(pbs) == len(set(pbs)),
-          f"all {len(pbs)} MCQs covered by exactly one proof method")
+    check(set(pbs) == set(RUNTIME) and len(pbs) == len(set(pbs)),
+          f"all {len(pbs)} MCQs are execution-verified, none copied")
     for m in MCQS:
         pb, correct = m["pb"], m["opts"][m["ans"]]
         check(len(m["opts"]) == 6 and len(set(m["opts"])) == 6,
               f"PB{pb}: exactly 6 distinct options (§6)")
-        if m["is_output"]:
-            check(m["opts"][4] == "Error" and m["opts"][5] == "None of the above",
-                  f"PB{pb}: e) Error and f) None of the above (§6)")
-            check(m["ans"] < 5 or pb == 86,
-                  f"PB{pb}: correct answer is a real option, not f)")
-        if pb in MANUAL:
-            print(f"  ---- PB{pb}: hand traced, marked {correct!r}")
-            continue
-        if pb in EXPRESSIONS:
-            vals = [eval(line, {}) for line in m["code"]]     # noqa: S307
-            check(vals == EXPRESSIONS[pb] == [int(x) for x in correct.split(",")],
-                  f"PB{pb}: expressions = {vals}, marked {correct!r}")
-            continue
+        check(m["opts"][4] == "Error" and m["opts"][5] == "None of the above",
+              f"PB{pb}: e) Error and f) None of the above (§6)")
+        check(m["ans"] < 5, f"PB{pb}: the answer is a real option, not f)")
         out, err = run("\n".join(m["code"]))
-        if pb in ERRORS:
-            check(err == ERRORS[pb] and correct == "Error",
-                  f"PB{pb}: raises {err}, marked {correct!r}")
-            continue
-        check(out.strip().rstrip(",") == RUNTIME[pb] and
-              numbers(out) == numbers(correct),
-              f"PB{pb}: printed {out.strip()!r}, marked {correct!r}")
+        check(err is None, f"PB{pb}: the snippet runs without raising ({err})")
+        check(norm(out) == RUNTIME[pb],
+              f"PB{pb}: really prints {out.strip()!r}, expected {RUNTIME[pb]!r}")
+        check(norm(out) == norm(correct) or
+              [float(x) for x in re.findall(r"-?\d+\.?\d*", norm(out))] ==
+              [float(x) for x in re.findall(r"-?\d+\.?\d*", correct)],
+              f"PB{pb}: printed value equals the marked option {correct!r}")
 
-    print("\n== descriptive / online questions are well posed ==")
-    out, err = run("total = 7 / 2\ncount = int(total)\n"
-                   "result = count ** 2 + 9 % 4\n"
-                   "print(result, type(result), type(total))")
-    check(out.strip() == "10 <class 'int'> <class 'float'>",
-          f"Q-2 1) cell really prints {out.strip()!r}")
-    n = 9875
-    while n >= 10:
-        s = 0
-        while n:
-            s += n % 10
-            n //= 10
-        n = s
-    check(n == 2, "Q-2 2) digital root of 9875 is 2, as the paper states")
+    print("\n== the descriptive and online questions are well posed ==")
+    src = "\n".join(line for kind, block in Q2[1]["body"] if kind == "code"
+                    for line in block)
+    out, err = run(src)
+    lines = out.splitlines()
+    check(err is None and lines[0] == "13 <class 'int'> 6.5 <class 'float'>",
+          f"Q-2 2) first print really gives {lines[0] if lines else None!r}")
+    check(len(lines) > 1 and lines[1] == "True",
+          f"Q-2 2) second print really gives {lines[1] if len(lines) > 1 else None!r}")
+
+    def rows(n):
+        total, out = 0, []
+        for i in range(1, n + 1):
+            row = [j for j in range(1, i + 1) if i % j == 0]
+            total += len(row)
+            out.append(f"Row {i} : " + " ".join(str(j) for j in row))
+        return out, total
+    exp, total = rows(4)
+    check(exp == ["Row 1 : 1", "Row 2 : 1 2", "Row 3 : 1 3", "Row 4 : 1 2 4"]
+          and total == 8,
+          "Q-2 3) worked example (n = 4) really gives those rows and 8 divisors")
 
     def bill(prev, cur, kind):
         units = cur - prev
         if kind == 1:
-            if units <= 100:
-                energy = units * 3
-            elif units <= 200:
-                energy = 300 + (units - 100) * 5
-            else:
-                energy = 300 + 500 + (units - 200) * 7
-            service = 50
+            energy = (units * 3 if units <= 100 else
+                      300 + (units - 100) * 5 if units <= 200 else
+                      800 + (units - 200) * 7)
+            fixed = 50
         else:
-            energy, service = units * 9, 150
-        return units, energy, service, energy + service
-    cases = [(1000, 1450, 1), (1000, 1450, 2), (500, 650, 1), (500, 500, 1)]
-    for prev, cur, kind in cases:
-        u, e, s, t = bill(prev, cur, kind)
-        assert t == e + s
-    check(bill(1000, 1450, 1) == (450, 2550, 50, 2600),
-          "Q-3 reference solution: domestic 450 units -> bill 2600 (HIGH USAGE)")
-    check(bill(1000, 1450, 2) == (450, 4050, 150, 4200),
-          "Q-3 reference solution: commercial 450 units -> bill 4200")
-    check(bill(500, 650, 1) == (150, 550, 50, 600),
-          "Q-3 reference solution: 150 units straddles the 100-unit slab")
+            energy = units * 9 if units <= 200 else 1800 + (units - 200) * 12
+            fixed = 150
+        sur = energy * 5 // 100 if units > 500 else 0
+        tot = energy + fixed + sur
+        cat = "HIGH" if tot > 5000 else "MEDIUM" if tot > 2000 else "LOW"
+        return units, energy, fixed, sur, tot, cat
+    check(bill(1000, 1450, 1) == (450, 2550, 50, 0, 2600, "MEDIUM"),
+          "Q-3 reference: domestic 450 units -> 2600, MEDIUM")
+    check(bill(1000, 1700, 1) == (700, 4300, 50, 215, 4565, "MEDIUM"),
+          "Q-3 reference: 700 units cross the 500-unit surcharge line")
+    check(bill(100, 900, 2) == (800, 9000, 150, 450, 9600, "HIGH"),
+          "Q-3 reference: commercial 800 units -> 9600, HIGH")
+    check(bill(500, 650, 1) == (150, 550, 50, 0, 600, "LOW"),
+          "Q-3 reference: 150 units straddle the 100-unit slab -> LOW")
+    check(bill(0, 60, 1)[5] == "LOW" and bill(0, 0, 1) == (0, 0, 50, 0, 50, "LOW"),
+          "Q-3 reference: zero consumption is defined, not a division by zero")
 
 
 # --------------------------------------------------------------------------- #
-def set_box_letters(doc):
-    return ["".join(t.text or "" for t in tb.iter(qn("w:t"))).strip()
-            for tb in doc.element.body.iter(qn("w:txbxContent"))
-            if "".join(t.text or "" for t in tb.iter(qn("w:t"))).strip()
-            .startswith("Set")]
+def paras(cell):
+    return cell.findall(qn("w:p"))
+
+
+def para_text(p):
+    """Paragraph text without the floating 'Set:' textbox, which is anchored
+    inside the CCE paragraph and is checked on its own."""
+    out = []
+    for t in p.iter(qn("w:t")):
+        anc = t.getparent()
+        while anc is not None and anc.tag != qn("w:txbxContent"):
+            anc = anc.getparent()
+        if anc is None:
+            out.append(t.text or "")
+    return "".join(out)
+
+
+def verify_header(doc, tpl, offline, label):
+    """The header must differ from the template ONLY in the variable runs."""
+    print(f"   header layout vs template ({label})")
+    # the template carries the offline header in table 0 and the online header
+    # in table 3 - each split file must be compared with its own
+    gt = doc.tables[0]._tbl
+    tt = (tpl.tables[0] if offline else tpl.tables[3])._tbl
+    grows, trows = gt.findall(qn("w:tr")), tt.findall(qn("w:tr"))
+    check(len(grows) == len(trows) == 9,
+          f"{label}: header still has 9 rows, got {len(grows)}")
+    for ri in (0, 1, 2, 3, 8):
+        gp = [para_text(p) for p in paras(grows[ri].findall(qn("w:tc"))[0])]
+        tp = [para_text(p) for p in paras(trows[ri].findall(qn("w:tc"))[0])]
+        if ri == 3:
+            tp = [t.replace("TEST 1/2/3 ( CO1/CO2/CO3 )", "TEST 1 ( CO1 )")
+                  for t in tp]
+        check(gp == tp, f"{label}: header row {ri} untouched")
+    for ri in (4, 5):
+        gp = paras(grows[ri].findall(qn("w:tc"))[0])
+        tp = paras(trows[ri].findall(qn("w:tc"))[0])
+        check(len(gp) == len(tp) == 2,
+              f"{label}: header row {ri} keeps the template's TWO paragraphs "
+              f"(got {len(gp)})")
+        check([len(p.findall(qn('w:r'))) for p in gp] ==
+              [len(p.findall(qn('w:r'))) for p in tp],
+              f"{label}: header row {ri} keeps the template's run count")
+    g4 = [para_text(p) for p in paras(grows[4].findall(qn("w:tc"))[0])]
+    check(g4[0].startswith("B.E. SEMESTER-I") and "BRANCH" not in g4[0],
+          f"{label}: 'B.E. SEMESTER-I' is still on its own line")
+    check(g4[1] == "BRANCH: " + BRANCHES,
+          f"{label}: the branch list is on the template's BRANCH: line")
+    g5 = [para_text(p) for p in paras(grows[5].findall(qn("w:tc"))[0])]
+    check(g5[0] == "SUBJECT- " + SUBJECT and g5[1] == "SUBJECT CODE: " + SUBJECT_CODES,
+          f"{label}: subject and subject codes on their own two lines")
+    for ri, probes in ((6, ("DATE: 29-Sep-2026", "DURATION:    1.25  Hours")),
+                       (7, ("TIME:  " + ("2:15 to 3:30 pm" if offline
+                                          else "4:15 to 5:30 pm"),
+                            "MAX MARKS: " + ("16" if offline else "09")))):
+        txt = para_text(paras(grows[ri].findall(qn("w:tc"))[0])[0])
+        tpl_txt = para_text(paras(trows[ri].findall(qn("w:tc"))[0])[0])
+        for pr in probes:
+            check(pr in txt, f"{label}: row {ri} contains {pr!r}")
+        # the label that follows must start in the template's own column
+        key = "DURATION" if ri == 6 else "MAX"
+        check(txt.index(key) == tpl_txt.index(key),
+              f"{label}: row {ri} keeps {key} in the template's column "
+              f"({txt.index(key)} == {tpl_txt.index(key)})")
+
+
+def is_mcq(cell_text):
+    """An MCQ row is one whose option block starts on its own '(a) ' line.
+
+    Matching a bare '(a)' anywhere would also hit code such as print(c).
+    """
+    return "\n(a) " in cell_text
 
 
 def parse_options(cell_text):
-    return dict(re.findall(r"\(([a-f])\)\s*([^\t\n]+)", cell_text))
-
-
-# the two template question tables have different geometries - both must be
-# reproduced exactly (§10)
-OFFLINE_GEOM = ({"624", "677"}, ["642", "497", "8396", "810", "841"])
-ONLINE_GEOM = ({"260", "4832"}, ["620", "625", "8110", "900", "1348"])
+    """Read the option block only - code lines may contain '(c)' too."""
+    tail = cell_text[cell_text.rindex("\n(a) ") + 1:]
+    return dict(re.findall(r"\(([a-f])\)\s*([^\t\n]+)", tail))
 
 
 def template_controls(doc, qtable, label, geom):
@@ -158,8 +230,7 @@ def template_controls(doc, qtable, label, geom):
           f"got {sorted(heights)}")
     widths = [g.get(qn("w:w"))
               for g in qtable._tbl.find(qn("w:tblGrid")).findall(qn("w:gridCol"))]
-    check(widths == exp_w,
-          f"{label}: template column widths preserved {widths}")
+    check(widths == exp_w, f"{label}: template column widths preserved {widths}")
     check(len(doc.tables) == 3 and len(doc.tables[2].rows) == 3,
           f"{label}: exactly one page - header, questions, Bloom table (§10)")
     check(doc.tables[0].rows[0].cells[0].text.strip() == "Enrollment No:",
@@ -179,60 +250,66 @@ def no_faculty_leak(doc, label):
     for leak in ("Practice Book", "PB Sr", "blueprint", "Answer", "faculty",
                  "audit"):
         check(leak not in student, f"{label}: no {leak!r} in the student copy (§11)")
-    check(not re.search(r"\bOR\b", student), f"{label}: no OR-type options")
+    check(not re.search(r"\bOR\b", student), f"{label}: no OR-type options (§4)")
 
 
-def verify_offline(letter, audit_txt):
+OFFLINE_GEOM = ({"624", "677"}, ["642", "497", "8396", "810", "841"])
+ONLINE_GEOM = ({"260", "4832"}, ["620", "625", "8110", "900", "1348"])
+
+
+def verify_offline(letter, tpl, by_opts, audit_txt):
     path = OUTDIR / offline_name(letter)
     doc = Document(str(path))
     label = f"OFFLINE SET {letter}"
     print(f"-- {path.name}")
-    check(set_box_letters(doc) == [f"Set: {letter}"] * 2,
+    check([t for t in ("".join(x.text or "" for x in tb.iter(qn("w:t"))).strip()
+                       for tb in doc.element.body.iter(qn("w:txbxContent")))
+           if t.startswith("Set")] == [f"Set: {letter}"] * 2,
           f"both 'Set' boxes read 'Set: {letter}'")
-
-    head = " ".join(c.text for r in doc.tables[0].rows for c in r.cells)
-    for probe in ("TEST 1 ( CO1 ) (OFFLINE)", "MAX MARKS: 16 marks",
-                  "2:15 to 3:30 pm", "29-Sep-2026", "1.25", "017012194",
-                  "017212194", "CE/IT/CSD",
-                  "Computer Programming using Python-I"):
-        check(probe in head, f"{label}: header contains {probe!r}")
-    check("2/3" not in head and "CO2" not in head,
-          f"{label}: no leftover 2/3 or CO2 in the heading")
-    check("4:15 to 5:30" not in student_text(doc) and "Q-3" not in student_text(doc),
-          f"{label}: carries no online content")
+    verify_header(doc, tpl, True, label)
 
     rows = doc.tables[1].rows
     block = rows[1]
     check(block.cells[0].text.strip() == "Q-1"
           and "1 Mark each" in block.cells[2].text
-          and block.cells[3].text.strip() == "(10)",
-          f"{label}: Q-1 block row = compulsory MCQ, 1 mark each, (10)")
-    mcq_rows, desc = [], 0
-    for r in rows[2:]:
-        sub, marks, body = (r.cells[1].text.strip(),
-                            r.cells[3].text.strip(), r.cells[2].text)
-        if re.search(r"\([a-f]\)", body):
-            mcq_rows.append((sub, body, marks))
-        else:
-            desc += int(marks)
-    check(len(mcq_rows) == 10 and sum(int(m) for _, _, m in mcq_rows) == 10,
+          and block.cells[3].text.strip() == mark(len(MCQS)),
+          f"{label}: Q-1 block row = compulsory MCQ, 1 mark each, "
+          f"{mark(len(MCQS))}")
+    mcq_rows = [(r.cells[1].text.strip(), r.cells[2].text,
+                 r.cells[3].text.strip())
+                for r in rows[2:] if re.search(r"\([a-f]\)", r.cells[2].text)]
+    pb_desc = 0
+    check(len(mcq_rows) == len(MCQS)
+          and sum(marks_value(m) for _, _, m in mcq_rows) == len(MCQS),
           f"{label}: {len(mcq_rows)} MCQs worth "
-          f"{sum(int(m) for _, _, m in mcq_rows)} marks from the PB (§5)")
-    check(desc == 6, f"{label}: outside-PB descriptive = {desc} marks (§5)")
+          f"{sum(marks_value(m) for _, _, m in mcq_rows)} marks from the PB (§5)")
+    q2_rows = [r for r in rows[2:] if not is_mcq(r.cells[2].text)]
+    check(len(q2_rows) == len(Q2), f"{label}: Q-2 has {len(Q2)} sub-questions")
+    for r, q in zip(q2_rows, Q2):
+        check(marks_value(r.cells[3].text) == q["marks"]
+              and r.cells[3].text.strip() == mark(q["marks"]),
+              f"{label}: Q-2 {r.cells[1].text.strip()} marks "
+              f"{r.cells[3].text.strip()} (Unit {q['unit']})")
+        if q["pb"]:
+            pb_desc += q["marks"]
+    outside = sum(q["marks"] for q in Q2 if not q["pb"])
+    desc = sum(marks_value(r.cells[3].text) for r in q2_rows)
+    check(desc == 8 and outside == 6,
+          f"{label}: Q-2 carries {desc} marks of which {outside} are outside "
+          f"the PB (§5)")
+    check(len(MCQS) + pb_desc == 10,
+          f"{label}: PB total = {len(MCQS)} MCQ + {pb_desc} descriptive = 10 (§5)")
     check(all(len(parse_options(b)) == 6 for _, b, _ in mcq_rows),
           f"{label}: every MCQ prints six options (§6)")
     check([by_opts[frozenset(parse_options(b).values())]["pb"]
            for _, b, _ in mcq_rows] == [MCQS[i]["pb"] for i in SET_ORDER[letter]],
           f"{label}: MCQ sequence matches SET_ORDER")
     for sub, body, _ in mcq_rows:
-        m = by_opts[frozenset(parse_options(body).values())]
-        if m["is_output"]:
-            o = parse_options(body)
-            check(o["e"] == "Error" and o["f"] == "None of the above",
-                  f"{label}: {sub} (PB{m['pb']}) prints e) Error and "
-                  f"f) None of the above")
+        o = parse_options(body)
+        check(o["e"] == "Error" and o["f"] == "None of the above",
+              f"{label}: {sub} prints e) Error and f) None of the above")
 
-    nested = next(r for r in rows if "elif a > 5:" in r.cells[2].text)
+    nested = next(r for r in rows if "elif count==5:" in r.cells[2].text)
     code_paras, text_paras = [], []
     for para in nested.cells[2].paragraphs:
         pPr = para._p.find(qn("w:pPr"))
@@ -247,8 +324,21 @@ def verify_offline(letter, audit_txt):
     check(all(f == {"Times New Roman"} for _, f in text_paras),
           f"{label}: stem and options keep the template font")
     levels = sorted({i for i, _ in code_paras})
-    check(len(levels) >= 3,
-          f"{label}: code indentation preserved, levels {levels}")
+    check(len(levels) >= 4,
+          f"{label}: nested indentation preserved, levels {levels}")
+    rule = {p._p.find(qn("w:pPr")).find(qn("w:spacing")).get(qn("w:lineRule"))
+            for p in nested.cells[2].paragraphs
+            if p._p.find(qn("w:pPr")) is not None
+            and p._p.find(qn("w:pPr")).find(qn("w:spacing")) is not None}
+    check("exact" not in rule,
+          f"{label}: no 'exact' leading that could clip code {sorted(rule)}")
+    stops = {t.get(qn("w:pos"))
+             for p in rows[2].cells[2].paragraphs
+             for tabs in [p._p.find(qn("w:pPr")).find(qn("w:tabs"))
+                          if p._p.find(qn("w:pPr")) is not None else None]
+             if tabs is not None for t in tabs.findall(qn("w:tab"))}
+    check(stops == {"2800", "5600"},
+          f"{label}: options sit on explicit tab stops {sorted(stops)} (§13)")
 
     block_txt = audit_txt.split(f"--- ANSWER KEY SET {letter}")[1] \
                          .split("--- ANSWER KEY")[0]
@@ -260,44 +350,47 @@ def verify_offline(letter, audit_txt):
         check(len(right) == 1 and key.get(f"Q-1 {sub}") == f"({right[0]})",
               f"{label}: key Q-1 {sub} = ({right[0]}) is the printed position of "
               f"the correct option (PB{m['pb']})")
+    seq = [next(L for L, v in parse_options(b).items()
+                if v == by_opts[frozenset(parse_options(b).values())]
+                ["opts"][by_opts[frozenset(parse_options(b).values())]["ans"]])
+           for _, b, _ in mcq_rows]
+    check(all(x != y for x, y in zip(seq, seq[1:])),
+          f"{label}: no two consecutive answers share a letter {seq}")
     mains = {r.cells[0].text.strip() for r in rows[1:] if r.cells[0].text.strip()}
     check(mains == {"Q-1", "Q-2"}, f"{label}: main questions = {sorted(mains)}")
     no_faculty_leak(doc, label)
     template_controls(doc, doc.tables[1], label, OFFLINE_GEOM)
-    return [parse_options(r.cells[2].text) for r in rows[2:12]], \
-           [r.cells[2].text for r in rows[12:]]
+    return [parse_options(r.cells[2].text) for r in rows[2:2 + len(MCQS)]], \
+           [r.cells[2].text for r in rows[2 + len(MCQS):]]
 
 
-def verify_online():
+def verify_online(tpl):
     path = OUTDIR / ONLINE_NAME
     doc = Document(str(path))
     label = "ONLINE (common)"
     print(f"-- {path.name}")
-    check(set_box_letters(doc) == ["Set: 1"] * 2,
+    check([t for t in ("".join(x.text or "" for x in tb.iter(qn("w:t"))).strip()
+                       for tb in doc.element.body.iter(qn("w:txbxContent")))
+           if t.startswith("Set")] == ["Set: 1"] * 2,
           "both 'Set' boxes read 'Set: 1' (one common online paper)")
-    head = " ".join(c.text for r in doc.tables[0].rows for c in r.cells)
-    for probe in ("TEST 1 ( CO1 ) (ONLINE)", "MAX MARKS: 09 marks",
-                  "4:15 to 5:30 pm", "29-Sep-2026", "1.25", "017012194",
-                  "017212194"):
-        check(probe in head, f"{label}: header contains {probe!r}")
-    check("2:15 to 3:30" not in student_text(doc),
-          f"{label}: carries no offline content")
-
+    verify_header(doc, tpl, False, label)
     on = doc.tables[1].rows[1:]
     check(len(on) == 1 and on[0].cells[1].text.strip() == "(A)"
-          and on[0].cells[3].text.strip() == "(09)"
+          and on[0].cells[3].text.strip() == mark(9)
           and on[0].cells[4].text.strip() == "C",
-          f"{label}: ONE integrated Q-3(A), marks (09), Bloom C (§9)")
+          f"{label}: ONE integrated Q-3(A), marks {mark(9)}, Bloom C (§9)")
     body = on[0].cells[2].text
     check("algorithm" in body.lower() and "flowchart" in body.lower(),
           f"{label}: requires an algorithm and a flowchart (Unit-1 link, §9)")
-    for probe in ("loop", "again", "how many", "Rs. 2000"):
+    for probe in ("eight consumers", "INVALID READING", "INVALID TYPE",
+                  "surcharge", "HIGH", "MEDIUM", "LOW", "highest total bill",
+                  "how many" if False else "number of consumers"):
         check(probe in body, f"{label}: requires {probe!r}")
     spec = body.split("Use of functions")[0]
     for banned in ("def ", "list(", "tuple(", "dict(", "set(", "import ",
                    "open(", "[", "lambda"):
         check(banned not in spec, f"{label}: avoids {banned!r} (§9)")
-    check("ternary" not in body.lower(), f"{label}: avoids the ternary form (§9)")
+    check("ternary" in body.lower(), f"{label}: bars the ternary form (§9)")
     mains = {r.cells[0].text.strip() for r in on if r.cells[0].text.strip()}
     check(mains == {"Q-3"}, f"{label}: main questions = {sorted(mains)}")
     no_faculty_leak(doc, label)
@@ -305,21 +398,19 @@ def verify_online():
 
 
 def verify_documents():
-    global by_opts
     print("\n== 2. the generated student papers ==")
+    tpl = Document(str(TEMPLATE))
     by_opts = {frozenset(m["opts"]): m for m in MCQS}
     check(len(by_opts) == len(MCQS), "option sets identify each MCQ uniquely")
     audit_txt = (OUTDIR
                  / "AUDIT SHEET AND ANSWER KEY_T1_PYTHON-I_MDP_faculty only.txt"
                  ).read_text()
-
     opts, tail = {}, {}
     for letter in ("A", "B", "C"):
-        opts[letter], tail[letter] = verify_offline(letter, audit_txt)
-    verify_online()
+        opts[letter], tail[letter] = verify_offline(letter, tpl, by_opts, audit_txt)
+    verify_online(tpl)
 
     print("\n== sets differ only in MCQ sequence (§4, §7) ==")
-    from collections import Counter
     for letter in ("A", "B", "C"):
         order = [tuple(sorted(o.values())) for o in opts[letter]]
         for other in ("A", "B", "C"):
@@ -327,22 +418,21 @@ def verify_documents():
                 continue
             o2 = [tuple(sorted(o.values())) for o in opts[other]]
             check(sorted(order) == sorted(o2),
-                  f"SET {letter} and SET {other} contain the same ten questions")
+                  f"SET {letter} and SET {other} contain the same questions")
             check(order != o2,
                   f"SET {letter} and SET {other} use a different MCQ sequence")
         check(tail["A"] == tail[letter],
               f"Q-2 is byte-identical in SET A and SET {letter}")
-        letters = [L for o in opts[letter]
-                   for L, v in o.items()
-                   if v == by_opts[frozenset(o.values())]
-                   ["opts"][by_opts[frozenset(o.values())]["ans"]]]
-        c = Counter(letters)
-        check(max(c.values()) <= 3 and len(set(letters)) >= 4,
+        seq = [L for o in opts[letter] for L, v in o.items()
+               if v == by_opts[frozenset(o.values())]["opts"]
+               [by_opts[frozenset(o.values())]["ans"]]]
+        c = Counter(seq)
+        check(max(c.values()) <= 3 and len(set(seq)) >= 4,
               f"SET {letter} answer-key spread {dict(sorted(c.items()))}")
 
 
 def verify_blueprint():
-    print("\n== 3. the unit blueprint (§3) ==")
+    print("\n== 3. blueprint, PB split and file inventory (§3, §5) ==")
     unit_offline = {1: 0, 2: 0, 3: 0}
     for m in MCQS:
         unit_offline[m["unit"]] += 1
@@ -351,15 +441,23 @@ def verify_blueprint():
     on_u2, on_u3 = Q3[0]["unit_online"]
     total = {1: unit_offline[1], 2: unit_offline[2] + on_u2,
              3: unit_offline[3] + on_u3}
+    check(sum(unit_offline.values()) == 16,
+          f"offline total = {sum(unit_offline.values())} (§5)")
     check(unit_offline == OFFLINE_UNIT_TARGET,
           f"offline unit split {unit_offline[1]}/{unit_offline[2]}/"
           f"{unit_offline[3]} = target 2/6/8 (§3)")
     check(total == T1_UNIT_BLUEPRINT,
           f"T1 unit total {total[1]}/{total[2]}/{total[3]} = blueprint 2/10/13 (§3)")
+    pb = sum(1 for _ in MCQS) + sum(q["marks"] for q in Q2 if q["pb"])
+    outside = sum(q["marks"] for q in Q2 if not q["pb"])
+    check(pb == 10 and outside == 6,
+          f"offline PB = {pb} and outside PB = {outside} (§5)")
     names = sorted(f.name for f in OUTDIR.glob("*.docx"))
     check(len(names) == 4 and sum(n.startswith("SET") for n in names) == 3
           and sum(n.startswith("ONLINE") for n in names) == 1,
-          f"deliverable = 3 offline sets + 1 common online paper: {names}")
+          f"deliverable = 3 offline sets + 1 common online paper")
+    mains = 2 + len(Q3)
+    check(mains <= 7, f"main questions across the paper = {mains} (max 7, §4)")
 
 
 def main():

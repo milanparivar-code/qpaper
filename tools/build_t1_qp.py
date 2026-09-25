@@ -82,168 +82,185 @@ Q_FONT = "Times New Roman"
 CODE_FONT = "Courier New"
 Q_SIZE = 22       # 11 pt question text
 CODE_SIZE = 18    #  9 pt monospaced code, indentation preserved
-CODE_LINE = 216   # 10.8 pt exact leading for code lines
+CODE_LINE = 216   # code lines at 0.9 line spacing (proportional, never clips)
 OPT_SIZE = 20     # 10 pt options
 MARK_SIZE = 20    # 10 pt marks / Bloom columns
 HEADER_SIZE = 24  # 12 pt institute header block (template size)
 
 # --------------------------------------------------------------------------- #
-# Q-1 : ten 1-mark MCQs, all from the T1 Practice Book (guidelines §5, §6)
+# Q-1 : eight 1-mark MCQs, all from the T1 Practice Book (guidelines §5, §6)
 #
-# output MCQs carry e) Error and f) None of the above and the option order is
-# FIXED - guidelines §4 allow only the MCQ *sequence* to be reshuffled.
-# `is_output` marks the questions the e)/f) convention applies to.
+# Every item below is an execution / trace question whose STEM is unchanged
+# from the Practice Book - §5 keeps such a question classified as PB even when
+# the options are changed.  The options were rebuilt to exactly six with
+# e) Error and f) None of the above (§6), their order is FIXED (§4 allows only
+# the MCQ *sequence* to be reshuffled) and every answer was re-derived by
+# executing the code here rather than copied from the PB key.
+# Recall-only PB items (Sr 1-20) and the trivial algorithm trace (Sr 21) are
+# deliberately not used: §4 forbids easy recall questions.
 # --------------------------------------------------------------------------- #
 MCQS = [
-    dict(pb=8, unit=1, bloom="U", ans=2, is_output=False,
-         stem=["A program that reads each of the instructions in mnemonic form "
-               "and translates it into the machine-language equivalent is ______"],
-         code=[],
-         opts=["Machine language", "Interpreter", "Assembler",
-               "Compiler", "Linker", "Loader"]),
-    dict(pb=21, unit=1, bloom="A", ans=1, is_output=True,
-         stem=["What will be the output of the following algorithm if the "
-               "input is 4?"],
-         code=["Algorithm:", "1. Start", "2. Set x = input value",
-               "3. Set y = x * 2",
-               "4. If y > 5, then print \"Large\", otherwise print \"Small\".",
-               "5. Stop"],
-         opts=["Small", "Large", "8", "4", "Error", "None of the above"]),
-    dict(pb=64, unit=2, bloom="A", ans=2, is_output=True,
-         stem=["What are the values of the following Python expressions?"],
-         code=["2**(3**2)", "(2**3)**2", "2**3**2"],
-         opts=["64, 512, 64", "64, 64, 64", "512, 64, 512",
-               "512, 512, 512", "Error", "None of the above"]),
-    dict(pb=54, unit=2, bloom="A", ans=3, is_output=True,
+    dict(pb=66, unit=2, bloom="A", ans=2, is_output=True,
+         stem=["What will be the output of this program?"],
+         code=["print(6 + 5 - 4 * 3 / 2 % 1)"],
+         opts=["11", "15", "11.0", "7", "Error", "None of the above"]),
+    dict(pb=74, unit=2, bloom="A", ans=3, is_output=True,
          stem=["What will be the output of the following program on execution?"],
-         code=["a=0", "b=6", "x=(a or b) or ((a and a) or (a and b))", "print(x)"],
-         opts=["0", "True", "False", "6", "Error", "None of the above"]),
-    dict(pb=86, unit=2, bloom="N", ans=4, is_output=True,
-         stem=["What will be the output of the following program on execution?"],
-         code=["a=50", "b=60", "print((a and b)/False)"],
-         opts=["0", "60", "50", "60.0", "Error", "None of the above"]),
-    dict(pb=107, unit=3, bloom="N", ans=0, is_output=True,
-         stem=["Given the nested if-else structure below, what will be the "
-               "value of x after code execution completes?"],
-         code=["x = 0", "a = 0", "b = -5",
-               "if a > 0:", "    if b < 0:", "        x = x + 5",
-               "    elif a > 5:", "        x = x + 4",
-               "    else:", "        x = x + 3",
-               "else:", "    x = x + 4", "print(x)"],
-         opts=["4", "0", "3", "2", "Error", "None of the above"]),
-    dict(pb=165, unit=3, bloom="A", ans=1, is_output=True,
-         stem=["What will be the output of the following program on execution?"],
-         code=["x=0", "while x<10:", "    if x%3==0:", "        x+=5",
-               "        continue", "    if x%2==0:", "        x+=14",
-               "    else:", "        x+=1", "else:", "    x+=1", "print(x)"],
-         opts=["10", "12", "11", "0", "Error", "None of the above"]),
-    dict(pb=167, unit=3, bloom="N", ans=1, is_output=True,
+         code=["a=4", "b=6", "c=3", "d=2", "print(a+d**b*c/a-b)"],
+         opts=["46", "52.0", "48.0", "46.0", "Error", "None of the above"]),
+    dict(pb=71, unit=2, bloom="A", ans=1, is_output=True,
+         stem=["What should be the output of the following python code snippet:"],
+         code=["x=0.0", "y=48>0", "z=11<7",
+               "print(not(float(x or y or z)))"],
+         opts=["True", "False", "0.0", "No output", "Error",
+               "None of the above"]),
+    dict(pb=114, unit=3, bloom="N", ans=1, is_output=True,
+         stem=["What will be the output of given Python code?"],
+         code=["n=7", "c=0", "while(n):", "    if(n>5):", "        c=c+n-1",
+               "        n=n-1", "    else:", "        break",
+               "print(n)", "print(c)"],
+         opts=["4 16", "5 11", "6 7", "5 10", "Error", "None of the above"]),
+    dict(pb=150, unit=3, bloom="N", ans=2, is_output=True,
+         stem=["What will be the output of the following snippet?"],
+         code=["a = True", "b = False", "c = False",
+               "if not a or b:", "    print (1)",
+               "elif not a or not b and c:", "    print (2)",
+               "elif not a or b or not b and a:", "    print (3)",
+               "else:", "    print (4)"],
+         opts=["1", "2", "3", "4", "Error", "None of the above"]),
+    dict(pb=166, unit=3, bloom="N", ans=2, is_output=True,
          stem=["What is the output of the following code?"],
-         code=["n=10", "i=1", "while(i<=n):", "    k=0", "    if(n%i==0):",
-               "        j=1", "        while(j<=i):", "            if(i%j==0):",
-               "                k=k+1", "            j=j+1",
-               "        if(k==2):", '            print(i,end=" ")', "    i=i+1"],
-         opts=["1 2 5 10", "2 5", "2 3 5 7", "2 5 10",
-               "Error", "None of the above"]),
-    dict(pb=176, unit=3, bloom="N", ans=2, is_output=True,
+         code=["val = 154", "while(not(val)):", "    val**=2",
+               "else:", "    val//=2", "print(val)"],
+         opts=["154", "11", "77", "23716", "Error", "None of the above"]),
+    dict(pb=170, unit=3, bloom="N", ans=0, is_output=True,
          stem=["What will be the output of the following program on execution?"],
-         code=["x=0", "count=0", "while x<15:", "    if x%2==0:", "        x+=1",
-               "        continue", "    if x%3==0:", "        x+=1",
-               "        continue", "    if count==5:", "        break",
-               "    count+=1", "print(x,count)"],
-         opts=["5 5", "0 5", "1 5", "15 5", "Error", "None of the above"]),
-    dict(pb=160, unit=3, bloom="A", ans=3, is_output=True,
-         stem=["What should be the output of the following python code snippet?"],
-         code=["a=5", "b=7", "c=2",
-               "if a>b:", "    a,b = b,a",
-               "if a>c:", "    a,c = c,a",
-               "if b>c:", "    b,c = c,b",
-               'print(a,b,c,end=",")'],
-         opts=["7 5 2", "2 7 5", "5 2 7", "2 5 7",
-               "Error", "None of the above"]),
+         code=["for x in range(0,15):", "    if(x%3==0):", "        continue",
+               "    if(x%5==0):", "        continue", "    if(x%7==0):",
+               "        break", "    print(x,end=\" \")"],
+         opts=["1 2 4", "0 1 2 4", "1 2 3 4", "1 2 4 7", "Error",
+               "None of the above"]),
+    dict(pb=177, unit=3, bloom="N", ans=1, is_output=True,
+         stem=["What will be the output of the following program on execution?"],
+         code=["x=0", "count=0", "for x in range(10):", "    while x<15:",
+               "        if x<0:", "            pass",
+               "        elif x%2==0:", "            x+=1", "            continue",
+               "        elif x%3==0:", "            x+=1", "            continue",
+               "        elif count==5:", "            break",
+               "        count+=1", "print(x,count)"],
+         opts=["10 5", "11 5", "16 5", "14 5", "Error", "None of the above"]),
 ]
 
-# Q-1 sequence per set - only the order changes, never the options (§4, §7)
+# MCQ sequence per set - the questions and their options are identical in all
+# three sets, only this order changes (guidelines §4).  Orders are chosen so
+# that no two consecutive answers carry the same option letter.
 SET_ORDER = {
-    "A": [5, 6, 2, 9, 4, 7, 8, 3, 0, 1],
-    "B": [7, 0, 3, 5, 8, 1, 4, 2, 9, 6],
-    "C": [2, 9, 1, 4, 6, 0, 5, 8, 3, 7],
+    "A": [0, 1, 2, 4, 3, 6, 5, 7],
+    "B": [6, 2, 0, 7, 1, 5, 3, 4],
+    "C": [1, 4, 3, 0, 6, 7, 5, 2],
 }
 
 # --------------------------------------------------------------------------- #
-# Q-2 : 6 marks outside the Practice Book (guidelines §5, §7)
-#       unit split 3 + 3 so that the offline paper is 2 / 6 / 8
+# Q-2 : the 6 outside-PB marks plus the 2 Unit-1 PB marks (guidelines §3, §5, §7)
+#       1) PB Sr. No. 30 (algorithm + flowchart), varied to 2 marks - Unit 1
+#       2) outside PB, 3 marks - Unit 2 : precedence, type conversion, logical
+#       3) outside PB, 3 marks - Unit 3 : nested loops and counters
+#       giving the offline unit split 2 / 6 / 8 and PB 10 + outside PB 6
 # --------------------------------------------------------------------------- #
 Q2 = [
-    dict(unit=2, bloom="A", marks=3,
+    dict(unit=1, bloom="C", marks=2, pb=30,
+         body=[
+             ("p", "Write an algorithm and draw a flowchart to arrange the "
+                   "three input numbers x, y and z in descending order."),
+         ]),
+    dict(unit=2, bloom="A", marks=3, pb=None,
          body=[
              ("p", "The following statements are executed in one cell of a "
                    "Jupyter Notebook:"),
-             ("code", ["total = 7 / 2",
-                       "count = int(total)",
-                       "result = count ** 2 + 9 % 4",
-                       "print(result, type(result), type(total))"]),
-             ("p", "(i)  Write the exact output produced by the cell."),
-             ("p", "(ii) Explain the result by stating the order in which the "
-                   "operators / , ** , % and + are applied and what the int() "
-                   "conversion does to the value."),
+             ("code", ["p = 17", "q = 5", "r = p / q",
+                       "s = int(r) ** 2 + p % q * 2", "t = s / 2",
+                       "print(s, type(s), t, type(t))",
+                       "print(bool(p % q) and not (s > 20))"]),
+             ("p", "(i)  Write the exact output produced by both print "
+                   "statements."),
+             ("p", "(ii) State the order in which the operators ** , % , * and "
+                   "+ are applied while evaluating s, and explain why s is of "
+                   "type int while t is of type float."),
          ]),
-    dict(unit=3, bloom="A", marks=3,
+    dict(unit=3, bloom="C", marks=3, pb=None,
          body=[
-             ("p", "Write a Python program that reads a positive integer from "
-                   "the user and prints its digital root, i.e. the single digit "
-                   "obtained by repeatedly adding the digits of the number "
-                   "until only one digit remains. Use of string, list, tuple or "
-                   "any other data structure and their built-in functions is "
-                   "not allowed."),
-             ("p", "Example :  Input : 9875   then  9+8+7+5 = 29  ->  2+9 = 11  "
-                   "->  1+1 = 2,  so the output is  2"),
+             ("p", "Write a Python program that reads a positive integer n "
+                   "from the user and, for every row i from 1 to n, prints the "
+                   "row number followed by all the numbers from 1 to i that "
+                   "divide i exactly. After all the rows have been printed, "
+                   "print the total number of divisors printed. Do not use any "
+                   "built-in function other than input(), int() and print()."),
+             ("p", "Example :  Input  n = 4"),
+             ("code", ["Row 1 : 1", "Row 2 : 1 2", "Row 3 : 1 3",
+                       "Row 4 : 1 2 4", "Total divisors printed = 8"]),
          ]),
 ]
 
 # --------------------------------------------------------------------------- #
 # Q-3(A) : ONE integrated 9-mark question, entirely outside the Practice Book
 #          (guidelines §9).  Bloom C.  Unit-1 connection = the required
-#          algorithm and flowchart; Units 2 and 3 through the program.
-#          Restricted to the T1 scope list of §9 - no functions, collections,
-#          classes, files, modules and no ternary operator.
+#          algorithm and flowchart; Unit 2 through variables, input, int(),
+#          arithmetic and output; Unit 3 through nested conditions, loops,
+#          validation and counters.  Restricted to the §9 scope list - no
+#          functions, collections, classes, files, modules, ternary operator.
 # --------------------------------------------------------------------------- #
 Q3 = [
     dict(unit_online=(4, 5), bloom="C", marks=9,
          body=[
-             ("p", "An electricity distribution company wants a billing system "
-                   "for its consumers."),
+             ("p", "An electricity distribution company wants a billing "
+                   "system for its consumers."),
              ("p", "First write an algorithm and draw a flowchart for the "
                    "system described below, and then write a Python program "
                    "for the same system."),
              ("p", "System specification : the program processes the bills of "
-                   "exactly five consumers, one after another, using a loop. "
+                   "exactly eight consumers, one after another, using a loop. "
                    "For every consumer it reads the consumer number, the "
                    "previous month meter reading, the current month meter "
                    "reading (all integers) and the type of connection "
                    "(1 for domestic, 2 for commercial). The program must"),
-             ("p", "a)     validate the readings : if the current reading is "
-                   "smaller than the previous reading, print INVALID READING "
-                   "and read the two readings again, repeating this until a "
-                   "valid pair is entered;"),
-             ("p", "b)     compute the units consumed as current reading minus "
-                   "previous reading;"),
-             ("p", "c)     compute the energy charge : for a domestic "
+             ("p", "a)     validate the readings : the previous reading must "
+                   "not be negative and the current reading must not be "
+                   "smaller than the previous reading; if either test fails, "
+                   "print INVALID READING and read the two readings again, "
+                   "repeating this until a valid pair is entered;"),
+             ("p", "b)     validate the type of connection : if the value "
+                   "entered is neither 1 nor 2, print INVALID TYPE and read "
+                   "the type again until it is 1 or 2;"),
+             ("p", "c)     compute the units consumed as current reading "
+                   "minus previous reading;"),
+             ("p", "d)     compute the energy charge : for a domestic "
                    "connection the first 100 units are charged at Rs. 3 per "
                    "unit, the next 100 units at Rs. 5 per unit and every "
                    "remaining unit at Rs. 7 per unit; for a commercial "
-                   "connection every unit is charged at Rs. 9 per unit;"),
-             ("p", "d)     add a service charge of Rs. 50 for a domestic "
-                   "connection and Rs. 150 for a commercial connection, and "
-                   "compute the total bill;"),
-             ("p", "e)     print the consumer number, the units consumed, the "
-                   "energy charge, the service charge and the total bill;"),
-             ("p", "f)     print HIGH USAGE if the total bill is more than "
-                   "Rs. 2000 and NORMAL USAGE otherwise;"),
-             ("p", "g)     after all five consumers have been processed, print "
-                   "how many of them were billed more than Rs. 2000."),
-             ("p", "Use of functions, lists, tuples, dictionaries, sets, files "
-                   "or modules is not allowed."),
+                   "connection the first 200 units are charged at Rs. 9 per "
+                   "unit and every remaining unit at Rs. 12 per unit;"),
+             ("p", "e)     add a fixed charge of Rs. 50 for a domestic "
+                   "connection and Rs. 150 for a commercial connection;"),
+             ("p", "f)     if the units consumed are more than 500, add a "
+                   "demand surcharge equal to 5 percent of the energy charge, "
+                   "computed with integer arithmetic only; otherwise the "
+                   "surcharge is zero;"),
+             ("p", "g)     compute the total bill as energy charge plus fixed "
+                   "charge plus surcharge, and decide the category : HIGH if "
+                   "the total bill is more than Rs. 5000, MEDIUM if it is "
+                   "more than Rs. 2000 but not more than Rs. 5000, and LOW "
+                   "otherwise;"),
+             ("p", "h)     print the consumer number, the units consumed, the "
+                   "energy charge, the fixed charge, the surcharge, the total "
+                   "bill and the category for that consumer;"),
+             ("p", "i)     after all eight consumers have been processed, "
+                   "print the number of consumers in each of the three "
+                   "categories, the total units consumed by all eight "
+                   "consumers together, and the highest total bill along "
+                   "with the consumer number that received it."),
+             ("p", "Use of functions, lists, tuples, dictionaries, sets, "
+                   "files or modules is not allowed. Do not use the ternary "
+                   "(conditional) operator form."),
          ]),
 ]
 
@@ -366,8 +383,7 @@ def write_blocks(tc, blocks):
             for line in payload:
                 stripped = line.lstrip(" ")
                 depth = (len(line) - len(stripped)) // 4
-                p = add_para(tc, indent=180 + depth * 180, line=CODE_LINE,
-                             exact=True)
+                p = add_para(tc, indent=180 + depth * 180, line=CODE_LINE)
                 add_run(p, stripped, size=CODE_SIZE, font=CODE_FONT)
 
 
@@ -494,22 +510,72 @@ def replace_text_everywhere(doc, old, new):
     return n
 
 
+def mark(n):
+    """Department bracketed marks format - guidelines §10: [0.5] [1] [03] [09]."""
+    if n == 1:
+        return "[1]"
+    if n == 0.5:
+        return "[0.5]"
+    return f"[{int(n):02d}]"
+
+
+def set_run_text(r, text):
+    """Rewrite a run's text and leave its formatting (w:rPr) untouched."""
+    ts = r.findall(qn("w:t"))
+    if not ts:
+        t = OxmlElement("w:t")
+        r.append(t)
+        ts = [t]
+    for extra in ts[1:]:
+        r.remove(extra)
+    ts[0].text = text
+    ts[0].set(qn("xml:space"), "preserve")
+
+
 def fill_header(tbl, offline):
+    """Populate only the template's variable fields, run by run.
+
+    The template keeps 'B.E. SEMESTER-I' and 'BRANCH:' on two separate
+    paragraphs - and 'SUBJECT-' / 'SUBJECT CODE:' likewise - and pads the DATE
+    and TIME lines with spaces so that DURATION and MAX MARKS begin at a fixed
+    column.  Rebuilding those cells collapses that layout, so only the runs
+    that actually carry variable text are rewritten (guidelines §10: populate
+    only the existing template fields).
+    """
     rows = tbl.findall(qn("w:tr"))
-    set_line(rows[4].findall(qn("w:tc"))[0],
-             "B.E. SEMESTER-I" + " " * 42 + "BRANCH: " + BRANCHES,
-             bold=True, size=HEADER_SIZE)
-    set_line(rows[5].findall(qn("w:tc"))[0],
-             "SUBJECT- " + SUBJECT + " " * 24 + "SUBJECT CODE: " + SUBJECT_CODES,
-             bold=True, size=HEADER_SIZE)
-    set_line(rows[6].findall(qn("w:tc"))[0],
-             "DATE: " + DATE + " " * 48 + "DURATION:    " + DURATION,
-             bold=True, size=HEADER_SIZE)
-    time = OFFLINE_TIME if offline else ONLINE_TIME
-    marks = OFFLINE_MAX if offline else ONLINE_MAX
-    set_line(rows[7].findall(qn("w:tc"))[0],
-             "TIME:  " + time + " " * 44 + "MAX MARKS: " + marks,
-             bold=True, size=HEADER_SIZE)
+
+    def runs(ri, pi):
+        return rows[ri].findall(qn("w:tc"))[0].findall(qn("w:p"))[pi] \
+                      .findall(qn("w:r"))
+
+    # the branch list goes on the template's own 'BRANCH:' line, and the
+    # subject codes on the template's own 'SUBJECT CODE:' line
+    set_run_text(runs(4, 1)[1], " " + BRANCHES)
+    set_run_text(runs(5, 0)[1], SUBJECT)
+    set_run_text(runs(5, 1)[0], "SUBJECT CODE: " + SUBJECT_CODES)
+
+    # date: only the three runs holding the sample date change, so the padding
+    # runs that align DURATION stay exactly as the template ships them
+    d = runs(6, 0)
+    day, mon, year = DATE.split("-")
+    set_run_text(d[1], day)
+    set_run_text(d[3], mon)
+    set_run_text(d[5], year[-1])
+
+    # time: the run keeps its original length so MAX MARKS stays in the
+    # template's column
+    t = runs(7, 0)
+    width = len(t[0].find(qn("w:t")).text)
+    label = "TIME:  " + (OFFLINE_TIME if offline else ONLINE_TIME)
+    set_run_text(t[0], label + " " * max(0, width - len(label)))
+    line = "".join(x.text or "" for r in t for x in r.findall(qn("w:t")))
+    if offline:
+        # the template's offline page is printed with the full T1 total
+        set_run_text(t[6], t[6].find(qn("w:t")).text.replace("25", "16"))
+    else:
+        assert "09" in line, "online header does not carry 09 marks"
+    assert "1.25" in "".join(x.text or "" for r in runs(6, 0)
+                             for x in r.findall(qn("w:t"))), "duration changed"
 
 
 def set_set_letter(doc, letter, current="A"):
@@ -574,16 +640,16 @@ def build_set(letter):
     # ---- offline ----------------------------------------------------------
     rows_spec = [dict(q="Q-1", sub="Sr. No.",
                       blocks=[("p", "MCQ ( 1 Mark each )")],
-                      marks="(10)", bloom="")]
+                      marks=mark(len(MCQS)), bloom="")]
     key = {}
     for n, src in enumerate(SET_ORDER[letter], start=1):
         mcq = MCQS[src]
         rows_spec.append(dict(q="", sub=f"{n})", mcq=mcq, opts=mcq["opts"],
-                              marks="1", bloom=mcq["bloom"]))
+                              marks=mark(1), bloom=mcq["bloom"]))
         key[f"Q-1 {n})"] = "(%s)" % "abcdef"[mcq["ans"]]
     for n, q in enumerate(Q2, start=1):
         rows_spec.append(dict(q="Q-2" if n == 1 else "", sub=f"{n})",
-                              blocks=q["body"], marks=str(q["marks"]),
+                              blocks=q["body"], marks=mark(q["marks"]),
                               bloom=q["bloom"]))
         key[f"Q-2 {n})"] = f"descriptive, {q['marks']} marks"
     rebuild_question_table(tables[1]._tbl, rows_spec)
@@ -592,7 +658,8 @@ def build_set(letter):
     rows_spec = []
     for n, q in enumerate(Q3, start=1):
         rows_spec.append(dict(q="Q-3" if n == 1 else "", sub="(A)",
-                              blocks=q["body"], marks="(09)", bloom=q["bloom"]))
+                              blocks=q["body"], marks=mark(q["marks"]),
+                              bloom=q["bloom"]))
         key["Q-3 (A)"] = "integrated 9 mark question, outside PB"
     rebuild_question_table(tables[4]._tbl, rows_spec, online=True)
 
@@ -612,6 +679,8 @@ def write_audit_sheet(keys, path):
     for q in Q2:
         unit_marks[q["unit"]] += q["marks"]
     on_u2, on_u3 = Q3[0]["unit_online"]
+    pb_marks = len(MCQS) + sum(q["marks"] for q in Q2 if q["pb"])
+    out_marks = sum(q["marks"] for q in Q2 if not q["pb"])
     total_unit = {1: unit_marks[1], 2: unit_marks[2] + on_u2,
                   3: unit_marks[3] + on_u3}
 
@@ -622,9 +691,8 @@ def write_audit_sheet(keys, path):
          "MARKS AND BLUEPRINT CHECK",
          f"  offline total ....... {sum(1 for _ in MCQS) + sum(q['marks'] for q in Q2)}"
          f" (required 16)",
-         f"  from Practice Book .. {len(MCQS)}  (required 10)",
-         f"  outside PB .......... {sum(q['marks'] for q in Q2)}"
-         f"  (required 6)",
+         f"  from Practice Book .. {pb_marks}  (required 10)",
+         f"  outside PB .......... {out_marks}  (required 6)",
          f"  online total ........ {sum(q['marks'] for q in Q3)} (required 9,"
          f" entirely outside PB)",
          f"  offline unit split .. {unit_marks[1]} / {unit_marks[2]} /"
@@ -640,8 +708,10 @@ def write_audit_sheet(keys, path):
         L.append(f"  MCQ {i:>2}    |  {m['unit']}   | PB Sr. No. {m['pb']:>3}    |"
                  f"   1   | PB         | {m['bloom']}")
     for i, q in enumerate(Q2, start=1):
-        L.append(f"  Q-2 {i})    |  {q['unit']}   | original          |"
-                 f"   {q['marks']}   | outside PB | {q['bloom']}")
+        src = f"PB Sr. No. {q['pb']:>3}" if q["pb"] else "original"
+        cls = "PB        " if q["pb"] else "outside PB"
+        L.append(f"  Q-2 {i})    |  {q['unit']}   | {src:<17} |"
+                 f"   {q['marks']}   | {cls} | {q['bloom']}")
     L.append(f"  Q-3 (A)  | 2,3  | original          |   9   | outside PB |"
              f" {Q3[0]['bloom']}")
     L.append("")
@@ -651,7 +721,12 @@ def write_audit_sheet(keys, path):
             L.append(f"  {k:<12} {v}")
         L.append("")
     L.append("OPEN ITEM (§6): the preferred 10 x 0.5 + 5 x 1 MCQ pattern needs")
-    L.append("written HOD clearance; this paper uses ten 1-mark MCQs in Q-1.")
+    L.append(f"written HOD clearance; this paper uses {len(MCQS)} 1-mark MCQs "
+             "in Q-1.")
+    L.append("")
+    L.append("PB Sr. No. 159 was rejected: its printed code cannot be")
+    L.append("re-indented unambiguously from the Practice Book and it does not")
+    L.append("reproduce the printed key, so it could not be verified (§6).")
     L.append("")
     L.append("OUTSTANDING (§10): a PDF preview must be generated and every page")
     L.append("visually checked in Word before these files are called final.")
@@ -674,16 +749,21 @@ S4  Setting rules     : conceptual/reasoning questions only; no definitions,
     formulae, short notes, True/False, Yes/No or fill in the blanks; Q-1 is
     the compulsory MCQ; 3 main questions in total; 3 sets with identical
     questions and only the MCQ sequence reshuffled; no faculty name used.
-S5  PB split          : offline = 10 MCQ marks from the Practice Book + 6
-    marks outside it; online 9 marks entirely outside it. PB questions are
-    used with their stems unchanged, so they remain PB questions.
+S5  PB split          : offline = 8 MCQ marks + 2 marks of PB Sr. No. 30 = 10
+    from the Practice Book, and 6 marks outside it; online 9 marks entirely
+    outside it. Every PB question keeps its stem unchanged (only the options
+    were rebuilt to six), so each remains a PB question.
 S6  MCQ rules         : every MCQ is 1 mark with exactly 6 options; every
     output MCQ uses e) Error and f) None of the above; every output MCQ was
     executed (see tools/verify_qp.py) before finalising.
     OPEN ITEM: the preferred 10 x 0.5 + 5 x 1 pattern was NOT used because it
     needs written HOD clearance (it clashes with the "at least seven
     questions in Q-1(A) and Q-1(B)" rule). This paper uses the compliant
-    Case-2 pattern: ten 1-mark MCQs, all compulsory in Q-1.
+    Case-2 pattern: eight 1-mark MCQs, all compulsory in Q-1.
+    Recall-only PB items (Sr 1-20) and the trivial algorithm trace (Sr 21) are
+    deliberately not used, because §4 forbids easy recall questions; PB
+    Sr. No. 159 was dropped because its code cannot be re-indented
+    unambiguously and it does not reproduce the printed key.
 S7  Workflow          : blueprint frozen first; PB serial numbers recorded in
     the faculty-only audit sheet; outside-PB questions test operator
     precedence, type conversion, logical operators, nested decisions,
@@ -695,9 +775,16 @@ S9  Online paper      : ONE integrated 9-mark question under Q-3(A), outside
     through the required algorithm and flowchart; no functions, collections,
     classes, files or modules.
 S10 Format controls   : built on the original Python-I T1-T3 template file;
-    enrollment boxes, merged cells, borders, column widths, tab stops and the
-    Bloom table untouched; only the template's own fields populated; code in
-    Courier New with indentation preserved; department marks style.
+    enrollment boxes, merged cells, borders, row heights, column widths, tab
+    stops and the Bloom table untouched; only the template's own fields are
+    populated and they are populated RUN BY RUN, so the header keeps its own
+    paragraph layout - 'B.E. SEMESTER-I' and 'BRANCH:' stay on separate lines,
+    as do 'SUBJECT-' and 'SUBJECT CODE:', and DURATION / MAX MARKS stay in the
+    template's columns. Code is Courier New with indentation preserved; the
+    marks column uses the bracketed form named in §10 ([1] [02] [03] [08]
+    [09]). NOTE: §10 makes that format conditional on the approved sample, and
+    no approved sample paper is in the QP documents folder - confirm it against
+    your sample, or switch it in one place (the mark() helper).
     ONE DEVIATION, deliberate: the template's question tables are floating
     (w:tblpPr) and a floating table is not split across pages by Word, so they
     were converted to inline centred tables of identical width. Set

@@ -13,16 +13,21 @@ S4  Setting rules     : conceptual/reasoning questions only; no definitions,
     formulae, short notes, True/False, Yes/No or fill in the blanks; Q-1 is
     the compulsory MCQ; 3 main questions in total; 3 sets with identical
     questions and only the MCQ sequence reshuffled; no faculty name used.
-S5  PB split          : offline = 10 MCQ marks from the Practice Book + 6
-    marks outside it; online 9 marks entirely outside it. PB questions are
-    used with their stems unchanged, so they remain PB questions.
+S5  PB split          : offline = 8 MCQ marks + 2 marks of PB Sr. No. 30 = 10
+    from the Practice Book, and 6 marks outside it; online 9 marks entirely
+    outside it. Every PB question keeps its stem unchanged (only the options
+    were rebuilt to six), so each remains a PB question.
 S6  MCQ rules         : every MCQ is 1 mark with exactly 6 options; every
     output MCQ uses e) Error and f) None of the above; every output MCQ was
     executed (see tools/verify_qp.py) before finalising.
     OPEN ITEM: the preferred 10 x 0.5 + 5 x 1 pattern was NOT used because it
     needs written HOD clearance (it clashes with the "at least seven
     questions in Q-1(A) and Q-1(B)" rule). This paper uses the compliant
-    Case-2 pattern: ten 1-mark MCQs, all compulsory in Q-1.
+    Case-2 pattern: eight 1-mark MCQs, all compulsory in Q-1.
+    Recall-only PB items (Sr 1-20) and the trivial algorithm trace (Sr 21) are
+    deliberately not used, because §4 forbids easy recall questions; PB
+    Sr. No. 159 was dropped because its code cannot be re-indented
+    unambiguously and it does not reproduce the printed key.
 S7  Workflow          : blueprint frozen first; PB serial numbers recorded in
     the faculty-only audit sheet; outside-PB questions test operator
     precedence, type conversion, logical operators, nested decisions,
@@ -34,9 +39,16 @@ S9  Online paper      : ONE integrated 9-mark question under Q-3(A), outside
     through the required algorithm and flowchart; no functions, collections,
     classes, files or modules.
 S10 Format controls   : built on the original Python-I T1-T3 template file;
-    enrollment boxes, merged cells, borders, column widths, tab stops and the
-    Bloom table untouched; only the template's own fields populated; code in
-    Courier New with indentation preserved; department marks style.
+    enrollment boxes, merged cells, borders, row heights, column widths, tab
+    stops and the Bloom table untouched; only the template's own fields are
+    populated and they are populated RUN BY RUN, so the header keeps its own
+    paragraph layout - 'B.E. SEMESTER-I' and 'BRANCH:' stay on separate lines,
+    as do 'SUBJECT-' and 'SUBJECT CODE:', and DURATION / MAX MARKS stay in the
+    template's columns. Code is Courier New with indentation preserved; the
+    marks column uses the bracketed form named in §10 ([1] [02] [03] [08]
+    [09]). NOTE: §10 makes that format conditional on the approved sample, and
+    no approved sample paper is in the QP documents folder - confirm it against
+    your sample, or switch it in one place (the mark() helper).
     ONE DEVIATION, deliberate: the template's question tables are floating
     (w:tblpPr) and a floating table is not split across pages by Word, so they
     were converted to inline centred tables of identical width. Set
