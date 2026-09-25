@@ -1,79 +1,55 @@
 L. J. INSTITUTE OF ENGINEERING AND TECHNOLOGY, AHMEDABAD
 TEST 1 (CO1) - Computer Programming using Python-I - SEM-I Batch 2026
-QP SETTER : MDP     EXAM DATE : 29-Sep-2026 (Tue)
-Submission deadline as per the QP setting circular : 25-Sep-2026, 12:00 midnight
-Send to : qp.fyall@gmail.com
+QP SETTER : MDP      EXAM : 29-Sep-2026 (Tue)
+Compliance map for PYTHON-1_T1_QUESTION_PAPER_GENERATION_GUIDELINES.pdf
 
----------------------------------------------------------------------------
-PAPER STRUCTURE
----------------------------------------------------------------------------
-OFFLINE  16 marks   2:15 - 3:30 pm   1.25 hrs
-   Q-1  10 x MCQ x 1 mark ........ 10 marks ... FROM the Practice Book
-   Q-2  2 x 3 marks ..............  6 marks ... OUT of the Practice Book
-ONLINE   09 marks   4:15 - 5:30 pm  1.25 hrs
-   Q-3  (A) 4 marks + (B) 5 marks   9 marks ... OUT of the Practice Book
-Total T1 = 25 marks, which is the T1 weightage issued by the HOD
-(MCQ 10 + Descriptive/Programs 15 = 25).
+S1  Identity/schedule : 16 offline / 09 online / 25 total; 2:15-3:30 and
+    4:15-5:30; 1.25 hrs each; deadline 25-Sep-2026; qp.fyall@gmail.com.
+S2  Branches/codes    : all 15 subject codes printed in both headers.
+S3  Blueprint         : offline 2 / 6 / 8; online 0 / 4 / 5;
+    T1 total 2 / 10 / 13 = the issued blueprint exactly. Nothing outside
+    Units 1-3 is used.
+S4  Setting rules     : conceptual/reasoning questions only; no definitions,
+    formulae, short notes, True/False, Yes/No or fill in the blanks; Q-1 is
+    the compulsory MCQ; 3 main questions in total; 3 sets with identical
+    questions and only the MCQ sequence reshuffled; no faculty name used.
+S5  PB split          : offline = 10 MCQ marks from the Practice Book + 6
+    marks outside it; online 9 marks entirely outside it. PB questions are
+    used with their stems unchanged, so they remain PB questions.
+S6  MCQ rules         : every MCQ is 1 mark with exactly 6 options; every
+    output MCQ uses e) Error and f) None of the above; every output MCQ was
+    executed (see tools/verify_qp.py) before finalising.
+    OPEN ITEM: the preferred 10 x 0.5 + 5 x 1 pattern was NOT used because it
+    needs written HOD clearance (it clashes with the "at least seven
+    questions in Q-1(A) and Q-1(B)" rule). This paper uses the compliant
+    Case-2 pattern: ten 1-mark MCQs, all compulsory in Q-1.
+S7  Workflow          : blueprint frozen first; PB serial numbers recorded in
+    the faculty-only audit sheet; outside-PB questions test operator
+    precedence, type conversion, logical operators, nested decisions,
+    while/for tracing, break/continue, nested loops, validation, counters.
+S9  Online paper      : ONE integrated 9-mark question under Q-3(A), outside
+    the Practice Book, Bloom C, strictly inside the T1 scope (variables,
+    input/output, int(), arithmetic and comparison operators, if/elif/else,
+    nested conditions, for, while, counters, validation). Unit 1 is connected
+    through the required algorithm and flowchart; no functions, collections,
+    classes, files or modules.
+S10 Format controls   : built on the original Python-I T1-T3 template file;
+    enrollment boxes, merged cells, borders, column widths, tab stops and the
+    Bloom table untouched; only the template's own fields populated; code in
+    Courier New with indentation preserved; department marks style.
+    ONE DEVIATION, deliberate: the template's question tables are floating
+    (w:tblpPr) and a floating table is not split across pages by Word, so they
+    were converted to inline centred tables of identical width. Set
+    KEEP_TEMPLATE_FLOATING_TABLE = True in tools/build_t1_qp.py to restore the
+    shipped structure exactly.
+    OUTSTANDING: a PDF preview must be produced and every page visually
+    checked in Word before these files are treated as final - that step cannot
+    be performed in this environment.
+S11 Audit             : run tools/verify_qp.py; it re-executes the MCQ code,
+    checks 6 options and the e)/f) convention, sums the marks, checks the unit
+    split, the PB/outside-PB split, the three sets and the confidentiality of
+    the student copies.
 
-UNIT / CO COVERAGE (issued unit wise marks 2 / 10 / 13, variation of 2-3 allowed)
-   Unit 1 Introduction to Computer ..................  2 marks
-   Unit 2 Introduction to Python and Jupyter ....... 11 marks
-   Unit 3 Conditional Execution and Iterations ..... 12 marks
-   Course Outcome : CO1 for every question of T1.
-
----------------------------------------------------------------------------
-GUIDELINE BY GUIDELINE (FY_QUESTION PAPER SETTING INSTRUCTIONS_T1 TO T3)
----------------------------------------------------------------------------
- 1  As per the T1 marks distribution issued by the HOD (10 MCQ + 15 descriptive
-    = 25, split 16 offline / 09 online).
- 2  No OR type options anywhere; all questions are compulsory.
- 3  Every question is conceptual / output tracing / program writing. No
-    definition, formula, theory, short note, True-False, Yes-No or fill in the
-    blanks question is used.
- 4  Difficulty is above average: 8 of the 10 MCQs are code/algorithm tracing
-    questions (nested if-elif, for-else, while-else, break/continue/pass) and
-    the descriptive questions need multi-step logic, not recall.
- 5  Offline 16 marks = 10 marks from the Practice Book (the 10 MCQs, listed
-    with their PB serial numbers in the answer key) + 6 marks out of the
-    Practice Book (Q-2). Online 9 marks are completely out of the Practice
-    Book (Q-3).
- 6  Marks of the PB questions are kept at 1 mark each, which is within the
-    allowed variation.
- 7  16 marks in 1.25 hrs (10 MCQ + two 3 mark answers) and 9 marks in 1.25 hrs
-    (two programs) can be completed inside the duration without being lengthy.
- 8  Every MCQ is of 1 mark and carries exactly 6 options, as required for T1.
- 9  Only 3 main questions (Q-1, Q-2, Q-3). Q-1 is the compulsory MCQ block and
-    all MCQs are of the same marks (1 mark), so all of them are kept in Q-1
-    (Case 2 of the instruction).
-10  Subject codes of all 15 branches are printed in the heading.
-11  Heading reads "TEST 1 ( CO1 )"; 2/3 and CO2/CO3 have been deleted.
-12  Three sets A, B and C are prepared. Questions are exactly the same in all
-    three sets; only the MCQs are reshuffled (question order and option order
-    both), and the correct option is placed at a different letter in each set.
-13  Pages are minimised: 11 pt question text, 9 pt code blocks with tight
-    leading, options set horizontally with tab stops, no images, and the
-    question tables were converted from floating to inline so that they can
-    run over a page boundary (a floating table would have been pushed whole
-    onto the next page).  Estimated length: offline paper about 2-3 pages,
-    online paper 1 page (the offline length is driven by the ten MCQs, each of
-    which has to carry six options in T1).
-14  Not saved on a personal PC beyond this submission and not sent to anybody
-    for prior verification.
-15  No printout before the completion of the exam.
-16  No LJIET faculty name is used in any question.
-17  To be mailed to qp.fyall@gmail.com.
-18  Prepared on the official Python-I T1-T3 format only
-    (SET A_T1 to T3_PYTHON-1_TEST PAPER_SEM I_..._FORMAT.docx), including the
-    Set box, the Marks and Bloom Taxonomy columns and the Bloom legend.
-
----------------------------------------------------------------------------
-NOTE ON THE OFFLINE / ONLINE SPLIT
----------------------------------------------------------------------------
-The HOD marks distribution for Python-I T1 is MCQ 10 + Descriptive 15 = 25.
-The schedule splits T1 into a 16 mark offline test and a 09 mark online test,
-and the setting instruction splits the offline paper into "10 marks from PB +
-6 marks out of PB".  The only split that satisfies all three is
-   offline = 10 MCQ (from PB) + 6 marks programs (out of PB)
-   online  = 9 marks programs (out of PB)
-which is what this paper uses.  If the department wants the online 9 marks to
-be MCQ instead, only the Q-3 block has to be replaced.
+FILES
+  SET A/B/C_T1_PYTHON-1_TEST PAPER_SEM I_MDP.docx  -> student papers
+  ANSWER KEY + AUDIT SHEET (faculty only)          -> never send with the QP
